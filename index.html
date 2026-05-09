@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bloblist</title>
+<style>
+  :root {
+    --bg-grad-1: #FFE5EC; --bg-grad-2: #C9E4FF; --bg-grad-3: #FFF4D6;
+    --orb-1: #FFB3C6; --orb-2: #A4C8FF; --orb-3: #FFD6A5;
+    --ink: #2D2640; --ink-2: #6B6386; --ink-3: #9590A8;
+    --glass-bg: rgba(255,255,255,0.55); --glass-bg-strong: rgba(255,255,255,0.75);
+    --glass-border: rgba(255,255,255,0.6); --glass-shadow: rgba(45,38,64,0.08);
+    --accent: #6B5BD6; --accent-soft: rgba(107,91,214,0.12);
+    --pink: #FF6B9D; --pink-soft: rgba(255,107,157,0.12);
+    --green: #34C77B; --green-soft: rgba(52,199,123,0.12);
+    --orange: #FF8A3D; --orange-soft: rgba(255,138,61,0.12);
+    --danger: #E64545; --danger-soft: rgba(230,69,69,0.12);
+    --gold: #E5A82E; --gold-soft: rgba(229,168,46,0.15);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-grad-1: #1F1A2E; --bg-grad-2: #2A2444; --bg-grad-3: #1A1F3A;
+      --orb-1: #6B4FA8; --orb-2: #4A6FA8; --orb-3: #A86B6B;
+      --ink: #F0EDFF; --ink-2: #B5B0CC; --ink-3: #7A7595;
+      --glass-bg: rgba(40,35,60,0.5); --glass-bg-strong: rgba(40,35,60,0.75);
+      --glass-border: rgba(255,255,255,0.1);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif; color: var(--ink); line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100vh; background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%, var(--bg-grad-3) 100%); background-attachment: fixed; overflow-x: hidden; position: relative; }
+  body::before, body::after { content: ''; position: fixed; border-radius: 50%; filter: blur(60px); opacity: 0.5; z-index: 0; pointer-events: none; will-change: transform; }
+  body::before { width: 380px; height: 380px; background: var(--orb-1); top: -100px; left: -100px; animation: float1 60s ease-in-out infinite; }
+  body::after { width: 320px; height: 320px; background: var(--orb-2); bottom: -80px; right: -80px; animation: float2 75s ease-in-out infinite; }
+  .orb-3 { display: none; }
+  @keyframes float1 { 0%,100%{transform:translate(0,0);} 33%{transform:translate(50px,80px);} 66%{transform:translate(-30px,50px);} }
+  @keyframes float2 { 0%,100%{transform:translate(0,0);} 50%{transform:translate(-80px,-50px);} }
+  @keyframes float3 { 0%,100%{transform:translate(0,0);} 50%{transform:translate(-100px,80px);} }
+  .app { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.25rem 5rem; position: relative; z-index: 1; }
+  .glass { background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 24px; box-shadow: 0 8px 32px var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.4); }
+  .blob-house { padding: 1.25rem; margin-bottom: 1rem; }
+  .house-inner { display: flex; align-items: center; gap: 14px; }
+  .blob-stage { width: 80px; height: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; background: var(--glass-bg-strong); border-radius: 50%; border: 0.5px solid var(--glass-border); box-shadow: inset 0 2px 8px rgba(255,255,255,0.5), 0 4px 12px var(--glass-shadow); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); position: relative; }
+  .blob-stage:hover { transform: scale(1.05); }
+  .blob-stage:active { transform: scale(0.95); }
+  .blob-svg { width: 75%; height: 75%; }
+  .blob-info { flex: 1; min-width: 0; }
+  .blob-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+  .blob-name { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+  .pill-info { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; border: 0.5px solid transparent; }
+  .pill-streak { background: var(--orange-soft); color: var(--orange); border-color: rgba(255,138,61,0.2); }
+  .pill-streak.zero { opacity: 0.4; }
+  .pill-coins { background: var(--gold-soft); color: var(--gold); border-color: rgba(229,168,46,0.25); }
+  .pill-hp { background: var(--danger-soft); color: var(--danger); border-color: rgba(230,69,69,0.2); }
+  .pill-hp.full { background: var(--green-soft); color: var(--green); border-color: rgba(52,199,123,0.2); }
+  .blob-mood { font-size: 12px; color: var(--ink-2); min-height: 18px; font-style: italic; }
+  .level-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .level-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.4); border-radius: 999px; overflow: hidden; border: 0.5px solid var(--glass-border); }
+  .level-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--pink)); transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1); border-radius: 999px; }
+  .level-text { font-size: 10px; color: var(--ink-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tabs { display: flex; gap: 3px; margin-bottom: 1rem; background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 14px; padding: 4px; box-shadow: 0 4px 16px var(--glass-shadow); overflow-x: auto; }
+  .tab { flex: 1; padding: 8px 6px; border: none; background: transparent; border-radius: 10px; font-family: inherit; font-size: 12px; font-weight: 500; color: var(--ink-2); cursor: pointer; transition: all 0.2s; white-space: nowrap; min-width: fit-content; }
+  .tab.active { background: var(--glass-bg-strong); color: var(--ink); font-weight: 600; }
+  .capture { display: flex; gap: 8px; margin-bottom: 0.75rem; }
+  .capture input { flex: 1; padding: 12px 16px; border: 0.5px solid var(--glass-border); border-radius: 14px; background: var(--glass-bg); backdrop-filter: blur(10px); color: var(--ink); font-family: inherit; font-size: 14px; outline: none; box-shadow: 0 4px 16px var(--glass-shadow); }
+  .capture input:focus { border-color: var(--accent); }
+  .capture input::placeholder { color: var(--ink-3); }
+  .quick-row { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .btn { padding: 12px 18px; border-radius: 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 0.5px solid var(--glass-border); box-shadow: 0 4px 16px var(--glass-shadow); transition: all 0.2s; backdrop-filter: blur(10px); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: white; border-color: transparent; }
+  .btn-secondary { background: var(--glass-bg-strong); color: var(--ink); }
+  .btn-success { background: var(--green); color: white; border-color: transparent; }
+  .btn-pink { background: var(--pink); color: white; border-color: transparent; }
+  .btn-small { padding: 8px 14px; font-size: 12px; border-radius: 10px; }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .chip { padding: 5px 12px; border-radius: 999px; border: 0.5px solid var(--glass-border); background: var(--glass-bg); backdrop-filter: blur(10px); font-family: inherit; font-size: 11px; font-weight: 500; color: var(--ink-2); cursor: pointer; }
+  .chip.active { background: var(--ink); color: white; border-color: transparent; }
+  .task { background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 16px; padding: 14px 16px; margin-bottom: 8px; box-shadow: 0 4px 16px var(--glass-shadow); transition: all 0.25s; position: relative; overflow: hidden; }
+  .task:hover { transform: translateY(-2px); }
+  .task.done { opacity: 0.55; }
+  .task.completing { animation: completePulse 0.7s ease-out; }
+  @keyframes completePulse { 0%{transform:scale(1);} 40%{transform:scale(1.02); background:var(--green-soft);} 100%{transform:scale(1);} }
+  .task-main { display: flex; align-items: flex-start; gap: 12px; }
+  .check-btn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ink-3); background: transparent; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; transition: all 0.2s; margin-top: 1px; }
+  .check-btn:hover { border-color: var(--accent); transform: scale(1.1); }
+  .check-btn.checked { background: var(--green); color: white; border-color: var(--green); }
+  .task-content { flex: 1; min-width: 0; }
+  .task-title { font-size: 14px; font-weight: 500; line-height: 1.4; cursor: pointer; }
+  .task.done .task-title { text-decoration: line-through; color: var(--ink-2); }
+  .deadline { font-size: 10px; font-weight: 500; margin-top: 4px; display: inline-block; padding: 2px 8px; border-radius: 5px; background: var(--accent-soft); color: var(--ink-2); }
+  .deadline.urgent { background: var(--danger-soft); color: var(--danger); font-weight: 600; }
+  .meta { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+  .tag { font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: 500; }
+  .tag-today { background: var(--danger-soft); color: var(--danger); }
+  .tag-week { background: var(--orange-soft); color: var(--orange); }
+  .tag-someday { background: var(--accent-soft); color: var(--ink-2); }
+  .tag-work { background: var(--accent-soft); color: var(--accent); }
+  .tag-personal { background: var(--pink-soft); color: var(--pink); }
+  .tag-quick { background: var(--green-soft); color: var(--green); }
+  .tag-deep { background: var(--accent-soft); color: var(--accent); }
+  .tag-errand { background: var(--orange-soft); color: var(--orange); }
+  .tag-quest { background: var(--gold-soft); color: var(--gold); border: 0.5px solid rgba(229,168,46,0.3); }
+  .tag-recurring { background: rgba(107,91,214,0.12); color: var(--accent); border: 0.5px solid rgba(107,91,214,0.25); }
+  .actions { display: flex; gap: 2px; margin-left: auto; opacity: 0.4; }
+  .task:hover .actions { opacity: 1; }
+  .icon-btn { background: transparent; border: none; padding: 4px 6px; cursor: pointer; color: var(--ink-3); border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .icon-btn:hover { background: var(--accent-soft); color: var(--ink); }
+  .subtasks { margin-top: 10px; padding: 10px 12px; background: rgba(255,255,255,0.3); border: 0.5px solid var(--glass-border); border-radius: 12px; }
+  .subtask { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; }
+  .subtask.done { opacity: 0.5; text-decoration: line-through; }
+  .sub-check { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--ink-3); background: transparent; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+  .sub-check.checked { background: var(--green); border-color: var(--green); color: white; }
+  .add-sub { font-size: 11px; color: var(--ink-3); background: none; border: none; padding: 3px 0; cursor: pointer; font-family: inherit; font-weight: 500; }
+  .sub-progress { height: 3px; background: rgba(255,255,255,0.3); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+  .sub-progress-fill { height: 100%; background: var(--green); transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .sub-counter { font-size: 10px; color: var(--ink-3); margin-top: 4px; font-weight: 500; }
+  .notes { margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,0.3); border-left: 2px solid var(--accent); border-radius: 6px; font-size: 12px; color: var(--ink-2); white-space: pre-wrap; }
+  .task-actions-row { margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
+  .mini-btn { padding: 5px 10px; border: 0.5px solid var(--glass-border); border-radius: 8px; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer; background: var(--glass-bg-strong); color: var(--ink); }
+  .mini-btn-magic { background: var(--accent-soft); color: var(--accent); }
+  .mini-btn-timer { background: var(--green-soft); color: var(--green); }
+  .mini-btn-quick { background: var(--pink-soft); color: var(--pink); }
+  .empty { text-align: center; padding: 2rem 1rem; color: var(--ink-2); }
+  .empty-blob { width: 80px; height: 80px; margin: 0 auto 1rem; opacity: 0.5; }
+  .empty-text { font-style: italic; font-size: 13px; }
+  .now-card { padding: 2rem 1.5rem; text-align: center; }
+  .now-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 1rem; }
+  .now-title { font-size: 20px; font-weight: 600; margin-bottom: 1rem; line-height: 1.3; }
+  .now-meta { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
+  .now-step { background: var(--accent-soft); border: 0.5px solid rgba(107,91,214,0.2); border-radius: 12px; padding: 12px; margin: 1rem 0; }
+  .now-step-label { font-size: 9px; font-weight: 700; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .now-step-text { font-size: 14px; font-weight: 500; }
+  .now-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 1.25rem; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(45,38,64,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  .modal { background: var(--glass-bg-strong); backdrop-filter: blur(16px); border: 0.5px solid var(--glass-border); border-radius: 22px; padding: 1.5rem; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(45,38,64,0.2); animation: pop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes pop { from{transform:scale(0.92) translateY(20px); opacity:0;} to{transform:scale(1) translateY(0); opacity:1;} }
+  .modal h3 { margin: 0 0 1rem; font-size: 17px; font-weight: 600; }
+  .field { margin-bottom: 14px; }
+  .field-label { font-size: 10px; color: var(--ink-2); margin-bottom: 5px; display: block; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .field input, .field textarea, .field select { width: 100%; padding: 10px 14px; border: 0.5px solid var(--glass-border); border-radius: 11px; font-family: inherit; font-size: 13px; background: rgba(255,255,255,0.5); color: var(--ink); outline: none; }
+  .pill-group { display: flex; gap: 5px; flex-wrap: wrap; }
+  .pill { padding: 6px 12px; border-radius: 999px; border: 0.5px solid var(--glass-border); background: rgba(255,255,255,0.4); font-family: inherit; font-size: 11px; font-weight: 500; color: var(--ink-2); cursor: pointer; }
+  .pill.active { background: var(--accent); color: white; border-color: transparent; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; flex-wrap: wrap; }
+  .timer-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%, var(--bg-grad-3) 100%); display: flex; align-items: center; justify-content: center; z-index: 200; flex-direction: column; gap: 1.25rem; padding: 1.5rem; animation: fadeIn 0.3s; }
+  .timer-card { padding: 1.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+  .timer-blob { width: 90px; height: 90px; }
+  .timer-blob svg { width: 100%; height: 100%; animation: bob 3s ease-in-out infinite; }
+  @keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+  .timer-task { font-size: 15px; color: var(--ink-2); text-align: center; max-width: 380px; font-weight: 500; }
+  .timer-display { font-size: 80px; font-weight: 200; letter-spacing: -2px; font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1; }
+  .timer-ring { position: relative; width: 260px; height: 260px; }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-status { font-size: 10px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+  .body-double-msg { background: rgba(255,255,255,0.3); padding: 12px 16px; border-radius: 12px; font-size: 12px; color: var(--ink-2); font-style: italic; max-width: 360px; text-align: center; min-height: 38px; transition: opacity 0.4s; }
+  .confetti { position: fixed; pointer-events: none; inset: 0; overflow: hidden; z-index: 300; }
+  .confetti-piece { position: absolute; font-size: 22px; animation: tumble 2s ease-out forwards; }
+  @keyframes tumble { 0%{transform:translateY(-20vh) rotate(0deg) scale(0); opacity:1;} 20%{transform:translateY(0) rotate(180deg) scale(1.2);} 100%{transform:translateY(120vh) rotate(720deg) scale(1); opacity:0;} }
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--glass-bg-strong); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); color: var(--ink); border-radius: 16px; padding: 12px 20px; font-size: 13px; font-weight: 500; z-index: 250; max-width: 90%; box-shadow: 0 8px 32px var(--glass-shadow); animation: bubbleIn 0.3s cubic-bezier(0.34,1.56,0.64,1), bubbleOut 0.3s ease-in 2.7s forwards; }
+  @keyframes bubbleIn { from{transform:translateX(-50%) translateY(30px) scale(0.9); opacity:0;} to{transform:translateX(-50%) translateY(0) scale(1); opacity:1;} }
+  @keyframes bubbleOut { from{opacity:1;} to{transform:translateX(-50%) translateY(20px); opacity:0;} }
+  .loot-popup { position: fixed; bottom: 6rem; left: 50%; transform: translateX(-50%); z-index: 280; background: linear-gradient(135deg, var(--gold), var(--orange)); color: white; padding: 14px 22px; border-radius: 16px; font-size: 14px; font-weight: 600; box-shadow: 0 8px 32px rgba(229,168,46,0.4); animation: lootIn 0.4s cubic-bezier(0.34,1.56,0.64,1), lootOut 0.4s ease-in 2.6s forwards; }
+  @keyframes lootIn { from{transform:translateX(-50%) translateY(40px) scale(0.5); opacity:0;} to{transform:translateX(-50%) translateY(0) scale(1); opacity:1;} }
+  @keyframes lootOut { from{opacity:1;} to{transform:translateX(-50%) translateY(-20px); opacity:0;} }
+  .collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 0.75rem; }
+  .blob-card { background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 16px; padding: 12px; box-shadow: 0 4px 16px var(--glass-shadow); text-align: center; cursor: pointer; transition: all 0.2s; }
+  .blob-card:hover { transform: translateY(-2px); }
+  .blob-card.locked { opacity: 0.4; }
+  .blob-card.active { border-color: var(--accent); box-shadow: 0 4px 20px var(--accent-soft); }
+  .blob-card svg { width: 60px; height: 60px; }
+  .blob-card-name { font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .blob-card-req { font-size: 10px; color: var(--ink-3); margin-top: 2px; font-weight: 500; }
+  .footer-row { margin-top: 1.5rem; padding-top: 1rem; border-top: 0.5px solid var(--glass-border); display: flex; gap: 6px; flex-wrap: wrap; font-size: 11px; }
+  .link-btn { background: none; border: none; color: var(--ink-2); font-family: inherit; font-size: 11px; cursor: pointer; padding: 4px 10px; font-weight: 500; border-radius: 8px; }
+  .link-btn:hover { background: var(--accent-soft); color: var(--ink); }
+  .map-area { padding: 1rem; }
+  .map-svg { width: 100%; height: auto; display: block; max-width: 500px; margin: 0 auto; aspect-ratio: 1/1; }
+  .map-region { cursor: pointer; transition: all 0.3s; }
+  .map-info { padding: 14px; background: var(--glass-bg-strong); border: 0.5px solid var(--glass-border); border-radius: 14px; margin-top: 0.75rem; text-align: center; font-size: 13px; }
+  .map-region-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+  .map-region-desc { color: var(--ink-2); font-size: 12px; font-style: italic; }
+  .quest-card { background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 16px; padding: 14px 16px; margin-bottom: 8px; box-shadow: 0 4px 16px var(--glass-shadow); }
+  .quest-card.complete { opacity: 0.6; }
+  .quest-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .quest-emoji { font-size: 22px; }
+  .quest-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .quest-progress-text { font-size: 11px; color: var(--ink-2); margin-top: 6px; }
+  .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 0.75rem; }
+  .shop-item { background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 14px; padding: 14px 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .shop-item:hover { transform: translateY(-2px); }
+  .shop-item.owned { opacity: 0.7; }
+  .shop-item.equipped { border-color: var(--accent); background: var(--accent-soft); }
+  .shop-emoji { font-size: 32px; margin-bottom: 6px; }
+  .shop-name { font-size: 12px; font-weight: 600; }
+  .shop-cost { font-size: 11px; color: var(--gold); font-weight: 600; margin-top: 4px; }
+  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink-2); margin: 1rem 0 0.5rem; padding: 0 4px; }
+  .checkin { padding: 14px 16px; margin-bottom: 0.75rem; }
+  .checkin-q { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .checkin-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .mood-btn { padding: 8px 12px; border-radius: 12px; border: 0.5px solid var(--glass-border); background: rgba(255,255,255,0.4); cursor: pointer; font-size: 18px; font-family: inherit; transition: all 0.2s; }
+  .mood-btn:hover { transform: scale(1.1); background: var(--accent-soft); }
+  .checkin-close { float: right; background: none; border: none; color: var(--ink-3); cursor: pointer; font-size: 16px; }
+  .stat-card { padding: 14px 16px; margin-bottom: 8px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-size: 13px; }
+  .stat-num-big { font-size: 22px; font-weight: 600; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+  .day-bar-row { display: flex; align-items: end; gap: 6px; height: 80px; padding: 0 4px; }
+  .day-bar { flex: 1; background: linear-gradient(to top, var(--accent), var(--pink)); border-radius: 6px 6px 0 0; min-height: 4px; position: relative; }
+  .day-bar-label { font-size: 10px; color: var(--ink-3); text-align: center; margin-top: 4px; font-weight: 600; }
+  .chest { display: inline-block; cursor: pointer; transition: transform 0.2s; animation: chestBob 2s ease-in-out infinite; }
+  .chest:hover { transform: scale(1.15); }
+  @keyframes chestBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .npc-card { padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 14px; border: 0.5px solid var(--gold); }
+  .npc-blob { width: 60px; height: 60px; flex-shrink: 0; }
+  .fusion-area { padding: 1.5rem; text-align: center; }
+  .fusion-slots { display: flex; gap: 1rem; justify-content: center; align-items: center; margin: 1rem 0; }
+  .fusion-slot { width: 100px; height: 100px; border: 2px dashed var(--ink-3); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+  .fusion-slot.filled { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+  .fusion-plus { font-size: 24px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="glass blob-house">
+    <div class="house-inner">
+      <div class="blob-stage" id="blob-stage"><div class="blob-svg" id="blob-svg"></div></div>
+      <div class="blob-info">
+        <div class="blob-name-row">
+          <span class="blob-name" id="blob-name">Goober</span>
+          <span class="pill-info pill-streak zero" id="streak-pill" data-action="show-pill" data-pill="streak">🔥 <span id="streak-num">0</span></span>
+          <span class="pill-info pill-coins" id="coins-pill" data-action="show-pill" data-pill="coins">🪙 <span id="coins-num">0</span></span>
+          <span class="pill-info pill-hp full" id="hp-pill" data-action="show-pill" data-pill="hp">❤️ <span id="hp-num">100</span></span>
+        </div>
+        <div class="blob-mood" id="blob-mood">just vibing</div>
+        <div class="level-row">
+          <div class="level-bar"><div class="level-fill" id="level-fill" style="width:0%"></div></div>
+          <span class="level-text" id="level-text">Lv 1 · 0/5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="checkin-mount"></div>
+
+  <div class="tabs">
+    <button class="tab" data-view="now">⚡ Now</button>
+    <button class="tab active" data-view="all">📋 Tasks</button>
+    <button class="tab" data-view="quests">⚔️ Quests</button>
+    <button class="tab" data-view="map">🌍 Map</button>
+    <button class="tab" data-view="shop">🛍 Shop</button>
+    <button class="tab" data-view="stats">📊 Stats</button>
+    <button class="tab" data-view="done">✅</button>
+  </div>
+  <div id="standard-view">
+    <div class="capture">
+      <input type="text" id="capture-input" placeholder="What's on your mind…" autofocus />
+      <button class="btn btn-primary" id="capture-btn">Add</button>
+    </div>
+    <div class="quick-row">
+      <button class="btn btn-small btn-pink" id="roulette-btn">🎲 Pick one for me</button>
+      <button class="btn btn-small btn-secondary" id="bodydouble-btn">👥 Body double</button>
+      <button class="btn btn-small btn-secondary" id="twomin-btn">⏱ 2-min sprint</button>
+    </div>
+    <div class="filters" id="filters">
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="today">Today</button>
+      <button class="chip" data-filter="week">Week</button>
+      <button class="chip" data-filter="someday">Someday</button>
+      <button class="chip" data-filter="work">Work</button>
+      <button class="chip" data-filter="personal">Personal</button>
+      <button class="chip" data-filter="quick">Quick</button>
+      <button class="chip" data-filter="deep">Deep</button>
+      <button class="chip" data-filter="errand">Errand</button>
+    </div>
+    <div id="task-list"></div>
+  </div>
+  <div id="now-view-mount" style="display:none;"></div>
+  <div id="quests-view-mount" style="display:none;"></div>
+  <div id="map-view-mount" style="display:none;"></div>
+  <div id="shop-view-mount" style="display:none;"></div>
+  <div id="stats-view-mount" style="display:none;"></div>
+  <div class="footer-row">
+    <button class="link-btn" id="export-btn">Export JSON</button>
+    <button class="link-btn" id="import-btn">Import JSON</button>
+    <button class="link-btn" id="copy-btn">Copy as text</button>
+    <button class="link-btn" id="freeze-btn">🧊 Freeze streak</button>
+    <button class="link-btn" id="notif-btn">🔔 Enable reminders</button>
+    <button class="link-btn" id="notif-btn">🔔 Notifications</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" />
+  </div>
+</div>
+<div id="modal-mount"></div>
+<div id="timer-mount"></div>
+<script>
+const STORAGE_KEY='bloblist_v3',META_KEY='bloblist_meta_v3';
+let state={tasks:[],quests:[],view:'all',filter:'all'};
+let meta={streak:0,lastDoneDate:null,totalDone:0,currentBlob:'goober',unlocked:['goober'],coins:0,hp:100,lastCheckDate:null,ownedItems:[],equippedItems:[],currentRegion:'home',unlockedRegions:['home'],freezesUsedThisWeek:0,lastFreezeWeek:null,checkins:[],lastCheckinDate:null,doneByDate:{},chests:[],activeNpc:null,lastNpcDate:null,fusedBlobs:[]};
+let editingId=null,timerState=null,bodyDoubleInterval=null;
+const seedTasks=[
+{id:'t1',title:'Reply to that one email you keep avoiding',done:false,urgency:'today',context:'work',energy:'quick',deadline:null,notes:'',subtasks:[],created:Date.now(),questId:null,repeat:'none'},
+{id:'t2',title:'Read 10 pages of a book',done:false,urgency:'week',context:'personal',energy:'quick',deadline:null,notes:'try the bookshelf, not the phone',subtasks:[],created:Date.now()+1,questId:null,repeat:'daily'},
+{id:'t3',title:'Plan that weekend trip',done:false,urgency:'someday',context:'personal',energy:'deep',deadline:null,notes:'',subtasks:[{id:'s1',text:'pick a destination',done:false},{id:'s2',text:'check budget',done:false},{id:'s3',text:'find dates that work',done:false}],created:Date.now()+2,questId:null,repeat:'none'},
+{id:'t4',title:'Tidy your desk',done:false,urgency:'week',context:'personal',energy:'errand',deadline:null,notes:'',subtasks:[],created:Date.now()+3,questId:null,repeat:'weekly'}];
+const BLOBS={goober:{name:'Goober',unlock:0,color:'#FFB3C6',eyes:'normal',mouth:'smile',accessory:null},zorp:{name:'Zorp',unlock:5,color:'#A4C8FF',eyes:'wide',mouth:'o',accessory:'antennae'},smush:{name:'Smush',unlock:15,color:'#FFD6A5',eyes:'sleepy',mouth:'smirk',accessory:'sparkles'},blarp:{name:'Blarp',unlock:30,color:'#C9B6E4',eyes:'starry',mouth:'tongue',accessory:'horn'},glorm:{name:'Glorm',unlock:50,color:'#FF8FA8',eyes:'angry',mouth:'fang',accessory:'fire'},nebula:{name:'Nebula',unlock:75,color:'#7B8FD9',eyes:'cosmic',mouth:'wonder',accessory:'stars'},uwu:{name:'Uwu',unlock:100,color:'#FFE5B8',eyes:'uwu',mouth:'uwu',accessory:'bow'}};
+const REGIONS={home:{name:'Home Meadow',desc:'where it all begins. soft grass and gentle vibes.',unlock:0,x:50,y:75,color:'#B5E8C5'},forest:{name:'Whisper Forest',desc:'tall trees, quiet moss, somebody is humming.',unlock:5,x:22,y:55,color:'#7DC09B'},beach:{name:'Tangerine Beach',desc:'pink sand. waves that say nice things.',unlock:12,x:78,y:60,color:'#FFD6A5'},mountain:{name:'Cloud Peak',desc:'high up. the air is thinner. the views are unreal.',unlock:25,x:50,y:30,color:'#C9B6E4'},city:{name:'Neon Hollow',desc:'a tiny city of lights. probably has karaoke.',unlock:40,x:18,y:22,color:'#FF8FA8'},void:{name:'The Void',desc:'just vibes. cosmic. unsettling but cute.',unlock:75,x:80,y:18,color:'#7B8FD9'}};
+const SHOP_ITEMS={hat_top:{name:'Top Hat',emoji:'🎩',cost:30,type:'accessory'},hat_party:{name:'Party Hat',emoji:'🎉',cost:25,type:'accessory'},hat_crown:{name:'Crown',emoji:'👑',cost:80,type:'accessory'},glasses:{name:'Cool Shades',emoji:'🕶',cost:40,type:'accessory'},bowtie:{name:'Bowtie',emoji:'🎀',cost:20,type:'accessory'},flower:{name:'Flower',emoji:'🌸',cost:15,type:'accessory'},rainbow:{name:'Rainbow Aura',emoji:'🌈',cost:100,type:'accessory'}};
+const QUEST_EMOJIS=['🌟','🎯','⚔️','🏆','📜','🔮','🗝','💎','🎨','🚀','🎭','🌈','🦋','🍀','🎮'];
+const bodyDoubleMessages=['*tapping at a tiny laptop*','*hums quietly*','*sips invisible coffee*',"i'm working too. silently.",'*shuffles papers*','doing my own thing. you do yours.','*types real fast for emphasis*','still here.','*adjusts invisible glasses*','no judgement. just vibes.','we got this. together but parallel.','*makes a little focus face*','the pact is intact.','*pretends to be a real worker*','*concentrating intensely*','vibe check: still working','solidarity, friend','*looks busy*'];
+const moodMessages={empty:['nothing to do. luxurious.','an empty list. a rare gift.',"we're free. for now."],overdue:["something's overdue. just sayin'.","we're behind. respectfully.",'panic gently.'],many:["that's a lot of tabs in your brain",'big list. one at a time.','breathe. pick the easy one.'],done:['nice','crushed it','beautiful','incredible','love that for us','one closer to peace'],streak:['streak going strong','unstoppable','we are on fire'],procrastinating:['the one task. you know.',"it's been waiting.",'gentle reminder: that thing'],encouraging:['you got this','small steps count','just one thing','pick the easiest']};
+const lowHpMessages=['kinda tired tbh','pls do something soon','i miss being useful','a little check-in?','hp low. mood lower.'];
+
+function svgBlob(blobId,mood='happy',extras=[]){
+  const b=BLOBS[blobId]||BLOBS.goober;
+  const eyes=renderEyes(b.eyes,mood),mouth=renderMouth(b.mouth,mood),acc=renderAccessory(b.accessory);
+  const itemsSvg=extras.map(e=>renderItem(e)).join('');
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 20 60 Q 15 35 35 25 Q 50 18 65 25 Q 85 35 80 60 Q 80 85 50 85 Q 20 85 20 60 Z" fill="${b.color}" stroke="#2D2640" stroke-width="2" stroke-linejoin="round" opacity="0.95"/><ellipse cx="32" cy="60" rx="6" ry="4" fill="#FF6B9D" opacity="0.4"/><ellipse cx="68" cy="60" rx="6" ry="4" fill="#FF6B9D" opacity="0.4"/>${eyes}${mouth}${acc}${itemsSvg}</svg>`;
+}
+function renderEyes(type,mood){
+  if(mood==='sad')return `<path d="M 35 48 Q 40 45 45 48" stroke="#2D2640" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M 55 48 Q 60 45 65 48" stroke="#2D2640" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+  switch(type){
+    case 'wide':return `<circle cx="40" cy="48" r="6" fill="white" stroke="#2D2640" stroke-width="1.5"/><circle cx="60" cy="48" r="6" fill="white" stroke="#2D2640" stroke-width="1.5"/><circle cx="41" cy="49" r="3" fill="#2D2640"/><circle cx="61" cy="49" r="3" fill="#2D2640"/>`;
+    case 'sleepy':return `<path d="M 35 48 Q 40 50 45 48" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M 55 48 Q 60 50 65 48" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    case 'starry':return `<text x="40" y="52" font-size="12" text-anchor="middle">✦</text><text x="60" y="52" font-size="12" text-anchor="middle">✦</text>`;
+    case 'angry':return `<line x1="34" y1="44" x2="44" y2="48" stroke="#2D2640" stroke-width="2.5" stroke-linecap="round"/><line x1="56" y1="48" x2="66" y2="44" stroke="#2D2640" stroke-width="2.5" stroke-linecap="round"/><circle cx="40" cy="50" r="2" fill="#2D2640"/><circle cx="60" cy="50" r="2" fill="#2D2640"/>`;
+    case 'cosmic':return `<circle cx="40" cy="48" r="5" fill="#A663CC"/><circle cx="60" cy="48" r="5" fill="#4ECDC4"/><circle cx="41" cy="47" r="1.5" fill="white"/><circle cx="61" cy="47" r="1.5" fill="white"/>`;
+    case 'uwu':return `<path d="M 33 50 Q 38 44 43 50" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M 57 50 Q 62 44 67 50" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    default:return `<circle cx="40" cy="48" r="3" fill="#2D2640"/><circle cx="60" cy="48" r="3" fill="#2D2640"/>`;
+  }
+}
+function renderMouth(type,mood){
+  if(mood==='sad')return `<path d="M 42 70 Q 50 64 58 70" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  switch(type){
+    case 'o':return `<ellipse cx="50" cy="67" rx="4" ry="5" fill="#2D2640"/>`;
+    case 'smirk':return `<path d="M 44 67 Q 50 70 56 65" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    case 'tongue':return `<path d="M 42 65 Q 50 72 58 65" stroke="#2D2640" stroke-width="2" fill="none"/><ellipse cx="50" cy="70" rx="4" ry="3" fill="#FF6B9D" stroke="#2D2640" stroke-width="1.2"/>`;
+    case 'fang':return `<path d="M 42 65 L 50 70 L 58 65" stroke="#2D2640" stroke-width="2" fill="white" stroke-linejoin="round"/>`;
+    case 'wonder':return `<ellipse cx="50" cy="67" rx="3" ry="4" fill="#2D2640"/>`;
+    case 'uwu':return `<path d="M 44 66 Q 47 70 50 67 Q 53 70 56 66" stroke="#2D2640" stroke-width="1.8" fill="#FF6B9D" stroke-linecap="round" stroke-linejoin="round"/>`;
+    default:return `<path d="M 42 65 Q 50 70 58 65" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  }
+}
+function renderAccessory(type){
+  switch(type){
+    case 'antennae':return `<line x1="40" y1="22" x2="35" y2="10" stroke="#2D2640" stroke-width="2" stroke-linecap="round"/><circle cx="35" cy="10" r="3" fill="#FFD93D" stroke="#2D2640" stroke-width="1.5"/><line x1="60" y1="22" x2="65" y2="10" stroke="#2D2640" stroke-width="2" stroke-linecap="round"/><circle cx="65" cy="10" r="3" fill="#FFD93D" stroke="#2D2640" stroke-width="1.5"/>`;
+    case 'sparkles':return `<text x="20" y="30" font-size="14">✨</text><text x="75" y="40" font-size="12">✨</text>`;
+    case 'horn':return `<path d="M 50 22 L 45 8 L 55 8 Z" fill="#FFD93D" stroke="#2D2640" stroke-width="1.5"/>`;
+    case 'fire':return `<path d="M 30 20 Q 28 12 32 8 Q 35 14 33 20" fill="#FF6B47" stroke="#2D2640" stroke-width="1.2"/><path d="M 70 22 Q 68 14 72 10 Q 75 16 73 22" fill="#FFD93D" stroke="#2D2640" stroke-width="1.2"/>`;
+    case 'stars':return `<text x="15" y="30" font-size="14">★</text><text x="80" y="35" font-size="12">★</text>`;
+    case 'bow':return `<path d="M 42 18 L 50 25 L 58 18 L 56 28 L 50 27 L 44 28 Z" fill="#FF6B9D" stroke="#2D2640" stroke-width="1.5"/>`;
+    default:return '';
+  }
+}
+function renderItem(itemId){
+  const item=SHOP_ITEMS[itemId];
+  if(!item)return '';
+  if(itemId.startsWith('hat_')||itemId==='flower'||itemId==='rainbow')return `<text x="50" y="14" font-size="20" text-anchor="middle">${item.emoji}</text>`;
+  if(itemId==='glasses')return `<text x="50" y="56" font-size="16" text-anchor="middle">${item.emoji}</text>`;
+  if(itemId==='bowtie')return `<text x="50" y="92" font-size="14" text-anchor="middle">${item.emoji}</text>`;
+  return '';
+}
+function pickMood(){
+  const active=state.tasks.filter(t=>!t.done);
+  const overdue=active.filter(t=>t.deadline&&new Date(t.deadline)<new Date());
+  if(meta.hp<40)return lowHpMessages[Math.floor(Math.random()*lowHpMessages.length)];
+  if(active.length===0)return msg('empty');
+  if(overdue.length>0)return msg('overdue');
+  if(active.length>8)return msg('many');
+  if(meta.streak>=3)return msg('streak');
+  if(Math.random()>0.7)return msg('procrastinating');
+  return msg('encouraging');
+}
+function msg(key){const a=moodMessages[key]||moodMessages.encouraging;return a[Math.floor(Math.random()*a.length)];}
+function getCelebrateMessage(){return moodMessages.done[Math.floor(Math.random()*moodMessages.done.length)];}
+function load(){
+  try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const d=JSON.parse(raw);state.tasks=d.tasks||[];state.quests=d.quests||[];}else{state.tasks=seedTasks;state.quests=[];save();}}catch{state.tasks=seedTasks;state.quests=[];save();}
+  try{const m=localStorage.getItem(META_KEY);if(m)meta={...meta,...JSON.parse(m)};}catch{}
+  if(!meta.unlocked)meta.unlocked=['goober'];
+  if(!meta.unlockedRegions)meta.unlockedRegions=['home'];
+  if(!meta.ownedItems)meta.ownedItems=[];
+  if(!meta.equippedItems)meta.equippedItems=[];
+  if(!meta.checkins)meta.checkins=[];
+  if(!meta.doneByDate)meta.doneByDate={};
+  if(!meta.chests)meta.chests=[];
+  if(!meta.fusedBlobs)meta.fusedBlobs=[];
+  rehydrateFusions();
+  updateStreak();updateHP();maybeSpawnNpc();
+  render();
+  setTimeout(checkDeadlineNotifs,2000);
+}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({tasks:state.tasks,quests:state.quests}));}catch{}}
+function saveMeta(){try{localStorage.setItem(META_KEY,JSON.stringify(meta));}catch{}}
+function updateStreak(){
+  const today=new Date().toISOString().slice(0,10),yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(meta.lastDoneDate&&meta.lastDoneDate!==today&&meta.lastDoneDate!==yest){meta.streak=0;saveMeta();}
+}
+function updateHP(){
+  const today=new Date().toISOString().slice(0,10);
+  if(meta.lastCheckDate!==today){
+    if(meta.lastDoneDate!==today){
+      const last=meta.lastDoneDate?new Date(meta.lastDoneDate):null;
+      if(last){const days=Math.floor((new Date(today)-last)/86400000);if(days>=2)meta.hp=Math.max(20,meta.hp-10*(days-1));}
+    }
+    meta.lastCheckDate=today;saveMeta();
+  }
+}
+function recordDone(task){
+  const today=new Date().toISOString().slice(0,10),yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(meta.lastDoneDate!==today){
+    if(meta.lastDoneDate===yest)meta.streak+=1;else meta.streak=1;
+    meta.lastDoneDate=today;
+  }
+  meta.totalDone=(meta.totalDone||0)+1;
+  meta.hp=Math.min(100,meta.hp+5);
+  if(!meta.doneByDate)meta.doneByDate={};
+  meta.doneByDate[today]=(meta.doneByDate[today]||0)+1;
+  // Recurring task: spawn next instance
+  if(task&&task.repeat&&task.repeat!=='none'){
+    const days={daily:1,weekly:7,biweekly:14,monthly:30}[task.repeat]||0;
+    if(days>0){
+      const next=new Date(Date.now()+days*86400000).toISOString().slice(0,10);
+      state.tasks.push({id:uid(),title:task.title,done:false,urgency:task.urgency,context:task.context,energy:task.energy,deadline:next,notes:task.notes,subtasks:(task.subtasks||[]).map(s=>({id:'s'+Date.now()+Math.random().toString(36).slice(2,4),text:s.text,done:false})),created:Date.now(),questId:task.questId,repeat:task.repeat});
+      setTimeout(()=>toast(`🔁 next "${task.title.slice(0,30)}" scheduled`),900);
+    }
+  }
+  const baseCoins=task&&task.energy==='deep'?8:task&&task.energy==='errand'?4:5;
+  const lootRoll=Math.random();
+  let coinsEarned=baseCoins,lootMsg=`+${baseCoins} 🪙`;
+  if(lootRoll<0.05){coinsEarned=baseCoins*5;lootMsg=`🎰 JACKPOT! +${coinsEarned} 🪙`;}
+  else if(lootRoll<0.15){coinsEarned=baseCoins*2;lootMsg=`✨ Lucky! +${coinsEarned} 🪙`;}
+  else if(lootRoll<0.25){coinsEarned=baseCoins+3;lootMsg=`💫 +${coinsEarned} 🪙 (+3 bonus)`;}
+  meta.coins=(meta.coins||0)+coinsEarned;
+  // Treasure chest spawn check (every 10 tasks)
+  if(meta.totalDone%10===0&&meta.unlockedRegions.length>0){
+    const region=meta.unlockedRegions[Math.floor(Math.random()*meta.unlockedRegions.length)];
+    if(!meta.chests)meta.chests=[];
+    meta.chests.push({id:'c'+Date.now(),region,opened:false});
+    setTimeout(()=>toast(`💰 a chest appeared in ${REGIONS[region].name}!`),1500);
+  }
+  Object.keys(BLOBS).forEach(id=>{if(BLOBS[id].unlock<=meta.totalDone&&!meta.unlocked.includes(id)){meta.unlocked.push(id);setTimeout(()=>toast(`✨ unlocked blob: ${BLOBS[id].name}`),1200);}});
+  Object.keys(REGIONS).forEach(id=>{if(REGIONS[id].unlock<=meta.totalDone&&!meta.unlockedRegions.includes(id)){meta.unlockedRegions.push(id);meta.currentRegion=id;setTimeout(()=>toast(`🌍 new region: ${REGIONS[id].name}!`),1800);}});
+  saveMeta();save();
+  return lootMsg;
+}
+function uid(){return 't'+Date.now()+Math.random().toString(36).slice(2,6);}
+function daysUntil(d){if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d)-t)/86400000);}
+function fmtDeadline(d){if(!d)return null;const x=daysUntil(d);if(x<0)return{text:`${Math.abs(x)}d overdue`,urgent:true};if(x===0)return{text:'due today',urgent:true};if(x===1)return{text:'due tomorrow',urgent:true};if(x<=3)return{text:`${x}d left`,urgent:true};return{text:`${x}d left`,urgent:false};}
+function getFiltered(){
+  let t=state.tasks;
+  if(state.view==='done')t=t.filter(x=>x.done);else t=t.filter(x=>!x.done);
+  if(state.filter!=='all')t=t.filter(x=>x.urgency===state.filter||x.context===state.filter||x.energy===state.filter);
+  const order={today:0,week:1,someday:2};
+  return t.sort((a,b)=>((order[a.urgency]??3)-(order[b.urgency]??3))||a.created-b.created);
+}
+function pickNowTask(){
+  const active=state.tasks.filter(t=>!t.done);if(active.length===0)return null;
+  const order={today:0,week:1,someday:2};
+  active.sort((a,b)=>{const u=(order[a.urgency]??3)-(order[b.urgency]??3);if(u!==0)return u;const da=a.deadline?new Date(a.deadline).getTime():Infinity;const db=b.deadline?new Date(b.deadline).getTime():Infinity;return(da-db)||(a.created-b.created);});
+  return active[0];
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function getEquippedExtras(){return meta.equippedItems.filter(id=>SHOP_ITEMS[id]&&SHOP_ITEMS[id].type==='accessory');}
+
+// ===== CHECK-IN =====
+const moods={'😊':'good','😐':'meh','😴':'tired','😤':'frustrated','🥳':'great','🫠':'overwhelmed'};
+function renderCheckin(){
+  const wrap=document.getElementById('checkin-mount');
+  const today=new Date().toISOString().slice(0,10);
+  if(meta.lastCheckinDate===today||meta.checkinDismissedDate===today){wrap.innerHTML='';return;}
+  wrap.innerHTML=`<div class="glass checkin">
+    <button class="checkin-close" data-action="dismiss-checkin">×</button>
+    <div class="checkin-q">how are you today?</div>
+    <div class="checkin-row">${Object.keys(moods).map(m=>`<button class="mood-btn" data-action="checkin" data-mood="${m}">${m}</button>`).join('')}</div>
+  </div>`;
+}
+
+// ===== NPC VISITORS =====
+const NPCS=[
+  {id:'wanderer',emoji:'🧳',color:'#FFD6A5',name:'a wandering blob',msg:"hey friend! finish 3 tasks today and i'll teach you a secret."},
+  {id:'merchant',emoji:'💼',color:'#A4C8FF',name:'a tiny merchant',msg:"got coins? finish 5 tasks and i'll knock 50% off the next thing you buy."},
+  {id:'sage',emoji:'🔮',color:'#C9B6E4',name:'an old sage blob',msg:"complete a deep focus task and i'll bestow rare wisdom (and 25 coins)."},
+  {id:'partygoer',emoji:'🎉',color:'#FF8FA8',name:'a partygoing blob',msg:"finish a quick win to celebrate! i brought 15 coins."},
+  {id:'mystery',emoji:'❓',color:'#7B8FD9',name:'a mysterious figure',msg:"do anything. just one thing. they want to see you try."}
+];
+function maybeSpawnNpc(){
+  const today=new Date().toISOString().slice(0,10);
+  if(meta.lastNpcDate===today)return;
+  if(Math.random()<0.4){
+    meta.activeNpc={...NPCS[Math.floor(Math.random()*NPCS.length)],spawnedDate:today,startCount:meta.totalDone};
+    meta.lastNpcDate=today;
+    saveMeta();
+  }else{
+    meta.lastNpcDate=today;saveMeta();
+  }
+}
+function checkNpcReward(){
+  if(!meta.activeNpc)return;
+  const done=meta.totalDone-meta.activeNpc.startCount;
+  const{id}=meta.activeNpc;
+  let earned=0;
+  if(id==='wanderer'&&done>=3)earned=20;
+  else if(id==='merchant'&&done>=5)earned=30;
+  else if(id==='partygoer'&&done>=1)earned=15;
+  else if(id==='mystery'&&done>=1)earned=10;
+  if(earned){
+    meta.coins+=earned;
+    setTimeout(()=>{toast(`🎁 ${meta.activeNpc.name} left you ${earned} 🪙 and waved goodbye`);},1200);
+    meta.activeNpc=null;saveMeta();
+  }
+}
+function renderNpc(){
+  if(!meta.activeNpc)return '';
+  const n=meta.activeNpc;
+  return `<div class="glass npc-card">
+    <div class="npc-blob"><svg viewBox="0 0 100 100"><path d="M 20 60 Q 15 35 35 25 Q 50 18 65 25 Q 85 35 80 60 Q 80 85 50 85 Q 20 85 20 60 Z" fill="${n.color}" stroke="#2D2640" stroke-width="2"/><circle cx="40" cy="48" r="3" fill="#2D2640"/><circle cx="60" cy="48" r="3" fill="#2D2640"/><path d="M 42 65 Q 50 70 58 65" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/><text x="50" y="14" font-size="20" text-anchor="middle">${n.emoji}</text></svg></div>
+    <div style="flex:1"><div style="font-weight:600;font-size:13px;">${n.name}</div><div style="font-size:12px;color:var(--ink-2);font-style:italic;margin-top:2px;">"${n.msg}"</div></div>
+  </div>`;
+}
+
+// ===== STATS =====
+function renderStats(){
+  const wrap=document.getElementById('stats-view-mount');
+  const dbd=meta.doneByDate||{};
+  const total=Object.values(dbd).reduce((a,b)=>a+b,0)||meta.totalDone;
+  // Last 7 days
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(Date.now()-i*86400000);
+    const key=d.toISOString().slice(0,10);
+    const label=['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()];
+    days.push({key,label,count:dbd[key]||0});
+  }
+  const max=Math.max(...days.map(d=>d.count),1);
+  // Day-of-week analysis
+  const dowCounts=[0,0,0,0,0,0,0];
+  Object.entries(dbd).forEach(([k,v])=>{const d=new Date(k);dowCounts[d.getDay()]+=v;});
+  const bestDow=dowCounts.indexOf(Math.max(...dowCounts));
+  const dowNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  // Active vs done
+  const active=state.tasks.filter(t=>!t.done).length;
+  const done=state.tasks.filter(t=>t.done).length;
+  // Energy breakdown of completed
+  const energyDone={quick:0,deep:0,errand:0};
+  state.tasks.filter(t=>t.done).forEach(t=>{if(energyDone[t.energy]!==undefined)energyDone[t.energy]++;});
+  wrap.innerHTML=`
+    <div class="glass stat-card">
+      <div class="stat-label">last 7 days</div>
+      <div class="day-bar-row">${days.map(d=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;"><div class="day-bar" style="width:80%;height:${(d.count/max)*100}%;" title="${d.count} tasks"></div><div class="day-bar-label">${d.label}</div></div>`).join('')}</div>
+    </div>
+    <div class="glass stat-card">
+      <div class="stat-row"><span class="stat-label">total done</span><span class="stat-num-big">${total}</span></div>
+      <div class="stat-row"><span class="stat-label">current streak</span><span class="stat-num-big">${meta.streak||0} 🔥</span></div>
+      <div class="stat-row"><span class="stat-label">coins earned</span><span class="stat-num-big">${meta.coins||0} 🪙</span></div>
+    </div>
+    <div class="glass stat-card">
+      <div class="stat-label" style="margin-bottom:8px;">your most productive day</div>
+      <div style="font-size:18px;font-weight:600;">${dowCounts[bestDow]>0?dowNames[bestDow]:'not enough data yet'}</div>
+      ${dowCounts[bestDow]>0?`<div style="font-size:11px;color:var(--ink-2);margin-top:2px;">${dowCounts[bestDow]} tasks completed on ${dowNames[bestDow]}s</div>`:''}
+    </div>
+    <div class="glass stat-card">
+      <div class="stat-label" style="margin-bottom:8px;">backlog</div>
+      <div class="stat-row"><span>active</span><span><strong>${active}</strong></span></div>
+      <div class="stat-row"><span>completed</span><span><strong>${done}</strong></span></div>
+    </div>
+    <div class="glass stat-card">
+      <div class="stat-label" style="margin-bottom:8px;">tasks by energy</div>
+      <div class="stat-row"><span>quick wins</span><span><strong>${energyDone.quick}</strong></span></div>
+      <div class="stat-row"><span>deep focus</span><span><strong>${energyDone.deep}</strong></span></div>
+      <div class="stat-row"><span>errands</span><span><strong>${energyDone.errand}</strong></span></div>
+    </div>
+    ${meta.checkins&&meta.checkins.length>0?`<div class="glass stat-card">
+      <div class="stat-label" style="margin-bottom:8px;">recent moods</div>
+      <div style="font-size:24px;letter-spacing:8px;">${meta.checkins.slice(-14).map(c=>c.mood).join('')}</div>
+    </div>`:''}
+  `;
+}
+
+// ===== CHESTS & FUSION (in shop) =====
+function openChest(chest){
+  const rolls=[
+    {chance:0.35,coins:30,msg:'a small pile of coins'},
+    {chance:0.6,coins:75,msg:'a decent stash'},
+    {chance:0.85,coins:150,msg:'a hefty haul!'},
+    {chance:1.0,item:true,msg:'something shiny'}
+  ];
+  const r=Math.random();
+  let result;
+  for(const opt of rolls){if(r<opt.chance){result=opt;break;}}
+  if(result.item){
+    // Give a random unowned shop item
+    const unowned=Object.keys(SHOP_ITEMS).filter(id=>!meta.ownedItems.includes(id));
+    if(unowned.length){
+      const pick=unowned[Math.floor(Math.random()*unowned.length)];
+      meta.ownedItems.push(pick);
+      lootPopup(`💰 chest: ${SHOP_ITEMS[pick].emoji} ${SHOP_ITEMS[pick].name}!`);
+    }else{
+      meta.coins+=200;lootPopup(`💰 chest: +200 🪙 (everything already owned)`);
+    }
+  }else{
+    meta.coins+=result.coins;
+    lootPopup(`💰 chest: ${result.msg} +${result.coins} 🪙`);
+  }
+  chest.opened=true;
+  meta.chests=meta.chests.filter(c=>!c.opened);
+  saveMeta();celebrate();render();
+}
+
+const FUSIONS={
+  'goober+zorp':{name:'Glorp',color:'#FFE5A5',eyes:'wide',mouth:'smile',accessory:'antennae'},
+  'smush+blarp':{name:'Smarp',color:'#E5BEC9',eyes:'starry',mouth:'smirk',accessory:'sparkles'},
+  'glorm+nebula':{name:'Glorbula',color:'#A87BB0',eyes:'cosmic',mouth:'fang',accessory:'fire'},
+  'uwu+goober':{name:'Uwuber',color:'#FFD0E0',eyes:'uwu',mouth:'smile',accessory:'bow'},
+  'zorp+blarp':{name:'Zarp',color:'#B5C9F0',eyes:'wide',mouth:'tongue',accessory:'horn'}
+};
+let fusionSlots=[null,null];
+function tryFusion(){
+  if(!fusionSlots[0]||!fusionSlots[1]){toast('pick two blobs first');return;}
+  if(fusionSlots[0]===fusionSlots[1]){toast('need two different blobs');return;}
+  const k1=`${fusionSlots[0]}+${fusionSlots[1]}`,k2=`${fusionSlots[1]}+${fusionSlots[0]}`;
+  const recipe=FUSIONS[k1]||FUSIONS[k2];
+  if(!recipe){toast(`those don't combine. try other pairs.`);fusionSlots=[null,null];render();return;}
+  const fusionId=k1 in FUSIONS?k1:k2;
+  if(meta.fusedBlobs.includes(fusionId)){toast('already discovered this one');return;}
+  if(meta.coins<50){toast('fusion costs 50 🪙');return;}
+  meta.coins-=50;meta.fusedBlobs.push(fusionId);
+  // Add to BLOBS dynamically and unlock
+  BLOBS[fusionId]={name:recipe.name,unlock:0,color:recipe.color,eyes:recipe.eyes,mouth:recipe.mouth,accessory:recipe.accessory};
+  meta.unlocked.push(fusionId);
+  saveMeta();celebrate();
+  lootPopup(`✨ DISCOVERED: ${recipe.name}!`);
+  fusionSlots=[null,null];render();
+}
+// Re-add fused blobs on load
+function rehydrateFusions(){
+  (meta.fusedBlobs||[]).forEach(fid=>{
+    const recipe=FUSIONS[fid];
+    if(recipe&&!BLOBS[fid])BLOBS[fid]={name:recipe.name,unlock:0,color:recipe.color,eyes:recipe.eyes,mouth:recipe.mouth,accessory:recipe.accessory};
+  });
+}
+
+// ===== NOTIFICATIONS =====
+async function requestNotifPermission(){
+  if(!('Notification' in window)){toast("your browser doesn't support notifications");return;}
+  if(Notification.permission==='granted'){toast('notifications already on ✓');return;}
+  const r=await Notification.requestPermission();
+  if(r==='granted'){toast('notifications enabled 🔔');checkDeadlineNotifs();}
+  else toast('no worries, you can enable them later');
+}
+function checkDeadlineNotifs(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const today=new Date().toISOString().slice(0,10);
+  if(meta.lastNotifDate===today)return;
+  const due=state.tasks.filter(t=>!t.done&&t.deadline&&daysUntil(t.deadline)<=1);
+  if(due.length>0){
+    new Notification(`bloblist: ${due.length} task${due.length>1?'s':''} due soon`,{body:due.slice(0,3).map(t=>'• '+t.title).join('\n'),icon:'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#FF8FB8"/></svg>')});
+    meta.lastNotifDate=today;saveMeta();
+  }
+}
+function renderBlob(){
+  const b=BLOBS[meta.currentBlob]||BLOBS.goober;
+  const mood=meta.hp<40?'sad':'happy';
+  document.getElementById('blob-svg').innerHTML=svgBlob(meta.currentBlob,mood,getEquippedExtras());
+  document.getElementById('blob-name').textContent=b.name;
+  document.getElementById('blob-mood').textContent=pickMood();
+  const level=Math.floor(meta.totalDone/5)+1,xpInLevel=meta.totalDone%5;
+  document.getElementById('level-text').textContent=`Lv ${level} · ${xpInLevel}/5`;
+  document.getElementById('level-fill').style.width=(xpInLevel*20)+'%';
+  document.getElementById('streak-num').textContent=meta.streak||0;
+  const sp=document.getElementById('streak-pill');
+  sp.classList.toggle('zero',!meta.streak);
+  // Tooltip
+  const today=new Date().toISOString().slice(0,10);
+  const doneToday=meta.lastDoneDate===today;
+  sp.title=meta.streak?`${meta.streak}-day streak. ${doneToday?'safe through today.':'finish 1 task to keep it.'}`:'no streak yet. finish a task today to start one.';
+  document.getElementById('coins-num').textContent=meta.coins||0;
+  document.getElementById('coins-pill').title=`${meta.coins||0} coins · earn by completing tasks. spend in shop.`;
+  document.getElementById('hp-num').textContent=meta.hp;
+  const hp=document.getElementById('hp-pill');
+  hp.classList.toggle('full',meta.hp>=70);
+  hp.title=`HP ${meta.hp}/100. ${doneToday?'+5 from today\'s task.':'lose 10 per skipped day. recover +5 per task done.'}`;
+}
+function renderTask(t){
+  const dl=fmtDeadline(t.deadline);
+  const sd=t.subtasks?t.subtasks.filter(s=>s.done).length:0;
+  const st=t.subtasks?t.subtasks.length:0;
+  const subPct=st>0?(sd/st)*100:0;
+  const quest=t.questId?state.quests.find(q=>q.id===t.questId):null;
+  return `<div class="task ${t.done?'done':''}" data-task="${t.id}"><div class="task-main">
+    <button class="check-btn ${t.done?'checked':''}" data-action="toggle" data-id="${t.id}">${t.done?'✓':''}</button>
+    <div class="task-content">
+      <div class="task-title" data-action="edit" data-id="${t.id}">${esc(t.title)}</div>
+      ${dl?`<div style="margin-top:4px"><span class="deadline ${dl.urgent?'urgent':''}">${dl.text}</span></div>`:''}
+      <div class="meta">
+        ${quest?`<span class="tag tag-quest">${quest.emoji} ${esc(quest.title)}</span>`:''}
+        ${t.repeat&&t.repeat!=='none'?`<span class="tag tag-recurring">🔁 ${t.repeat}</span>`:''}
+        ${t.urgency?`<span class="tag tag-${t.urgency}">${t.urgency==='week'?'this week':t.urgency}</span>`:''}
+        ${t.context?`<span class="tag tag-${t.context}">${t.context}</span>`:''}
+        ${t.energy?`<span class="tag tag-${t.energy}">${t.energy==='quick'?'quick':t.energy==='deep'?'deep focus':'errand'}</span>`:''}
+      </div>
+      ${st>0?`<div class="subtasks">${t.subtasks.map(s=>`<div class="subtask ${s.done?'done':''}"><button class="sub-check ${s.done?'checked':''}" data-action="toggle-sub" data-id="${t.id}" data-sub="${s.id}">${s.done?'✓':''}</button><span style="flex:1">${esc(s.text)}</span><button class="icon-btn" data-action="del-sub" data-id="${t.id}" data-sub="${s.id}">×</button></div>`).join('')}<button class="add-sub" data-action="add-sub" data-id="${t.id}">+ tiny step</button><div class="sub-progress"><div class="sub-progress-fill" style="width:${subPct}%"></div></div><div class="sub-counter">${sd} of ${st}</div></div>`:`<button class="add-sub" data-action="add-sub" data-id="${t.id}" style="margin-top:6px">+ break it down</button>`}
+      ${t.notes?`<div class="notes">${esc(t.notes)}</div>`:''}
+      ${!t.done?`<div class="task-actions-row"><button class="mini-btn mini-btn-magic" data-action="breakdown" data-id="${t.id}">✨ smaller</button><button class="mini-btn mini-btn-timer" data-action="timer" data-id="${t.id}">⏱ 25</button><button class="mini-btn mini-btn-quick" data-action="timer-quick" data-id="${t.id}">⚡ 2 min</button></div>`:''}
+    </div>
+    <div class="actions"><button class="icon-btn" data-action="edit" data-id="${t.id}">✎</button><button class="icon-btn" data-action="delete" data-id="${t.id}">×</button></div>
+  </div></div>`;
+}
+function renderNow(){
+  const wrap=document.getElementById('now-view-mount');
+  const t=pickNowTask();
+  if(!t){wrap.innerHTML=`<div class="glass now-card"><div style="width:90px;height:90px;margin:0 auto 1rem;">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</div><div style="font-size:18px;font-weight:600;margin-bottom:8px;">nothing to do</div><div style="color:var(--ink-2);font-style:italic;font-size:13px;">go touch some grass.</div></div>`;return;}
+  const dl=fmtDeadline(t.deadline);
+  const sd=t.subtasks?t.subtasks.filter(s=>s.done).length:0;
+  const stTotal=t.subtasks?t.subtasks.length:0;
+  const nextSub=t.subtasks?t.subtasks.find(s=>!s.done):null;
+  wrap.innerHTML=`<div class="glass now-card">
+    <div class="now-label">just this one</div>
+    <div class="now-title">${esc(t.title)}</div>
+    ${dl?`<div><span class="deadline ${dl.urgent?'urgent':''}">${dl.text}</span></div>`:''}
+    <div class="now-meta">${t.urgency?`<span class="tag tag-${t.urgency}">${t.urgency==='week'?'this week':t.urgency}</span>`:''}${t.context?`<span class="tag tag-${t.context}">${t.context}</span>`:''}${t.energy?`<span class="tag tag-${t.energy}">${t.energy==='quick'?'quick':t.energy==='deep'?'deep focus':'errand'}</span>`:''}</div>
+    ${nextSub?`<div class="now-step"><div class="now-step-label">next tiny step</div><div class="now-step-text">${esc(nextSub.text)}</div></div>`:''}
+    ${stTotal>0?`<div class="sub-progress" style="margin:1rem auto;max-width:300px;"><div class="sub-progress-fill" style="width:${(sd/stTotal)*100}%"></div></div><div class="sub-counter">${sd} of ${stTotal}</div>`:''}
+    ${t.notes?`<div class="notes" style="text-align:left;margin-top:12px;">${esc(t.notes)}</div>`:''}
+    <div class="now-actions">${nextSub?`<button class="btn btn-success" data-action="toggle-sub" data-id="${t.id}" data-sub="${nextSub.id}">✓ done with step</button>`:`<button class="btn btn-success" data-action="toggle" data-id="${t.id}">✓ mark complete</button>`}<button class="btn btn-secondary" data-action="timer" data-id="${t.id}">⏱ 25 min</button><button class="btn btn-pink" data-action="timer-quick" data-id="${t.id}">⚡ 2 min</button></div>
+  </div>`;
+}
+function renderQuests(){
+  const wrap=document.getElementById('quests-view-mount');
+  const cards=state.quests.map(q=>{
+    const taskList=state.tasks.filter(t=>t.questId===q.id);
+    const total=taskList.length,done=taskList.filter(t=>t.done).length;
+    const pct=total>0?(done/total)*100:0;
+    const complete=total>0&&done===total;
+    return `<div class="quest-card ${complete?'complete':''}"><div class="quest-header"><span class="quest-emoji">${q.emoji}</span><span class="quest-title">${esc(q.title)}</span><button class="icon-btn" data-action="del-quest" data-id="${q.id}">×</button></div>${q.desc?`<div style="font-size:12px;color:var(--ink-2);font-style:italic;margin-bottom:6px;">${esc(q.desc)}</div>`:''}<div class="sub-progress"><div class="sub-progress-fill" style="width:${pct}%"></div></div><div class="quest-progress-text">${done} of ${total} tasks ${complete?'· complete! 🎉':''}</div>${q.reward&&complete&&!q.claimed?`<button class="btn btn-small btn-pink" style="margin-top:8px;" data-action="claim-quest" data-id="${q.id}">claim ${q.reward} 🪙</button>`:''}</div>`;
+  }).join('');
+  wrap.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;"><div style="font-size:13px;color:var(--ink-2);font-style:italic;">group related tasks. complete all → reward.</div><button class="btn btn-small btn-primary" id="new-quest-btn">+ new quest</button></div>${cards||'<div class="empty"><div class="empty-text">no quests yet. start one above.</div></div>'}`;
+  const nq=document.getElementById('new-quest-btn');if(nq)nq.onclick=()=>openQuestModal();
+}
+function renderMap(){
+  const wrap=document.getElementById('map-view-mount');
+  const current=REGIONS[meta.currentRegion]||REGIONS.home;
+  const chestRegions={};(meta.chests||[]).filter(c=>!c.opened).forEach(c=>{chestRegions[c.region]=(chestRegions[c.region]||0)+1;});
+  const paths=Object.entries(REGIONS).map(([id,r])=>{
+    const unlocked=meta.unlockedRegions.includes(id);
+    const isCurrent=meta.currentRegion===id;
+    const hasChest=chestRegions[id];
+    return `<g class="map-region" data-action="travel" data-region="${id}" style="cursor:${unlocked?'pointer':'not-allowed'};">
+      <circle cx="${r.x}" cy="${r.y}" r="9" fill="${unlocked?r.color:'#D8D3E0'}" stroke="#2D2640" stroke-width="${isCurrent?'1.5':'0.8'}" opacity="${unlocked?'1':'0.4'}"/>
+      ${isCurrent?`<circle cx="${r.x}" cy="${r.y}" r="13" fill="none" stroke="${r.color}" stroke-width="0.6" opacity="0.6"><animate attributeName="r" values="13;16;13" dur="2s" repeatCount="indefinite"/></circle>`:''}
+      <text x="${r.x}" y="${r.y+18}" text-anchor="middle" font-size="3.5" font-weight="600" fill="${unlocked?'#2D2640':'#9590A8'}">${unlocked?r.name:'???'}</text>
+      ${!unlocked?`<text x="${r.x}" y="${r.y+1.5}" text-anchor="middle" font-size="6" fill="white">🔒</text>`:''}
+      ${hasChest?`<text x="${r.x+8}" y="${r.y-6}" font-size="7" text-anchor="middle">💰</text>`:''}
+    </g>`;
+  }).join('');
+  const lines=[['home','forest'],['home','beach'],['forest','mountain'],['beach','mountain'],['mountain','city'],['mountain','void'],['city','void']].map(([a,b])=>{const ra=REGIONS[a],rb=REGIONS[b];return `<line x1="${ra.x}" y1="${ra.y}" x2="${rb.x}" y2="${rb.y}" stroke="#2D2640" stroke-width="0.3" stroke-dasharray="1,1" opacity="0.3"/>`;}).join('');
+  const cur=REGIONS[meta.currentRegion];
+  const chestCount=Object.keys(chestRegions).length;
+  wrap.innerHTML=`<div class="glass map-area"><svg class="map-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="100" height="100" fill="rgba(255,255,255,0.15)"/>${lines}${paths}<g transform="translate(${cur.x-5},${cur.y-12}) scale(0.1)">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</g></svg><div class="map-info"><div class="map-region-name">${current.name}</div><div class="map-region-desc">${current.desc}</div><div style="font-size:11px;color:var(--ink-3);margin-top:6px;">${meta.unlockedRegions.length}/${Object.keys(REGIONS).length} regions discovered${chestCount?` · 💰 ${chestCount} chest${chestCount>1?'s':''} waiting`:''}</div></div></div>`;
+}
+function renderShop(){
+  const wrap=document.getElementById('shop-view-mount');
+  const blobCards=Object.entries(BLOBS).map(([id,b])=>{
+    const unlocked=meta.unlocked.includes(id),active=meta.currentBlob===id;
+    const isFusion=Object.keys(FUSIONS).includes(id);
+    return `<div class="blob-card ${unlocked?'':'locked'} ${active?'active':''}" data-action="select-blob" data-blob="${id}">${unlocked?svgBlob(id,'happy'):'<div style="width:60px;height:60px;display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0.4;">🔒</div>'}<div class="blob-card-name">${unlocked?b.name:'???'}${isFusion?' ✨':''}</div><div class="blob-card-req">${unlocked?(active?'equipped':'tap to wear'):`${b.unlock} done`}</div></div>`;
+  }).join('');
+  const shopCards=Object.entries(SHOP_ITEMS).map(([id,item])=>{
+    const owned=meta.ownedItems.includes(id),equipped=meta.equippedItems.includes(id);
+    return `<div class="shop-item ${owned?'owned':''} ${equipped?'equipped':''}" data-action="${owned?'toggle-equip':'buy'}" data-item="${id}"><div class="shop-emoji">${item.emoji}</div><div class="shop-name">${item.name}</div><div class="shop-cost">${owned?(equipped?'✓ equipped':'tap to wear'):`${item.cost} 🪙`}</div></div>`;
+  }).join('');
+  // Fusion UI
+  const slot1=fusionSlots[0],slot2=fusionSlots[1];
+  const fusionUI=`<div class="glass fusion-area">
+    <div style="font-size:13px;color:var(--ink-2);font-style:italic;margin-bottom:8px;">combine 2 unlocked blobs to discover hybrids · 50 🪙</div>
+    <div class="fusion-slots">
+      <div class="fusion-slot ${slot1?'filled':''}" data-action="fusion-slot" data-slot="0">${slot1?svgBlob(slot1,'happy'):'<div style="font-size:32px;color:var(--ink-3);">?</div>'}</div>
+      <div class="fusion-plus">+</div>
+      <div class="fusion-slot ${slot2?'filled':''}" data-action="fusion-slot" data-slot="1">${slot2?svgBlob(slot2,'happy'):'<div style="font-size:32px;color:var(--ink-3);">?</div>'}</div>
+    </div>
+    <button class="btn btn-small btn-primary" data-action="fuse">✨ fuse them</button>
+    <div style="font-size:11px;color:var(--ink-3);margin-top:8px;">${meta.fusedBlobs.length}/${Object.keys(FUSIONS).length} hybrids discovered</div>
+  </div>`;
+  // Chests UI
+  const chests=(meta.chests||[]).filter(c=>!c.opened);
+  const chestUI=chests.length>0?`<div class="glass" style="padding:14px;text-align:center;margin-bottom:0.75rem;">
+    <div class="stat-label" style="margin-bottom:8px;">treasure chests</div>
+    ${chests.map(c=>`<span class="chest" data-action="open-chest" data-chest="${c.id}" style="font-size:36px;margin:0 6px;">💰</span>`).join('')}
+    <div style="font-size:11px;color:var(--ink-2);margin-top:6px;">tap to open · spawned in ${chests.map(c=>REGIONS[c.region].name).join(', ')}</div>
+  </div>`:'';
+  wrap.innerHTML=`<div style="text-align:center;margin-bottom:0.75rem;font-size:13px;color:var(--ink-2);">🪙 <strong style="color:var(--ink);">${meta.coins||0}</strong> coins · earn more by completing tasks</div>${chestUI}<div class="section-title">Your blobs</div><div class="collection-grid">${blobCards}</div><div class="section-title">Blob fusion lab</div>${fusionUI}<div class="section-title">Accessories</div><div class="shop-grid">${shopCards}</div>`;
+}
+function render(){
+  rehydrateFusions();
+  renderBlob();
+  renderCheckin();
+  ['standard-view','now-view-mount','quests-view-mount','map-view-mount','shop-view-mount','stats-view-mount'].forEach(id=>{document.getElementById(id).style.display='none';});
+  if(state.view==='now'){document.getElementById('now-view-mount').style.display='block';renderNow();}
+  else if(state.view==='quests'){document.getElementById('quests-view-mount').style.display='block';renderQuests();}
+  else if(state.view==='map'){document.getElementById('map-view-mount').style.display='block';renderMap();}
+  else if(state.view==='shop'){document.getElementById('shop-view-mount').style.display='block';renderShop();}
+  else if(state.view==='stats'){document.getElementById('stats-view-mount').style.display='block';renderStats();}
+  else{
+    document.getElementById('standard-view').style.display='block';
+    const tasks=getFiltered(),list=document.getElementById('task-list');
+    const npcHtml=state.view==='all'?renderNpc():'';
+    if(tasks.length===0){const messages=state.view==='done'?['nothing finished yet.']:["no tasks. you're free or in denial."];list.innerHTML=npcHtml+`<div class="glass empty"><div class="empty-blob">${svgBlob(meta.currentBlob,'sad')}</div><div class="empty-text">${messages[0]}</div></div>`;}
+    else{list.innerHTML=npcHtml+tasks.map(renderTask).join('');}
+  }
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));
+}
+function celebrate(){
+  const wrap=document.createElement('div');wrap.className='confetti';
+  const emojis=['✨','🎉','⭐','💫','🌟','🎊','💖'];
+  for(let i=0;i<22;i++){const piece=document.createElement('div');piece.className='confetti-piece';piece.textContent=emojis[Math.floor(Math.random()*emojis.length)];piece.style.left=Math.random()*100+'%';piece.style.animationDelay=Math.random()*0.3+'s';wrap.appendChild(piece);}
+  document.body.appendChild(wrap);setTimeout(()=>wrap.remove(),3000);
+}
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),3100);}
+function lootPopup(t){const e=document.createElement('div');e.className='loot-popup';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),3100);}
+function openModal(task){
+  editingId=task?task.id:null;
+  const t=task||{title:'',urgency:'week',context:'work',energy:'quick',deadline:'',notes:'',questId:null,repeat:'none'};
+  const questOptions=state.quests.map(q=>`<option value="${q.id}" ${t.questId===q.id?'selected':''}>${q.emoji} ${esc(q.title)}</option>`).join('');
+  document.getElementById('modal-mount').innerHTML=`<div class="modal-bg" id="modal-bg"><div class="modal" id="modal" data-urgency="${t.urgency}" data-context="${t.context}" data-energy="${t.energy}" data-repeat="${t.repeat||'none'}">
+    <h3>${task?'Edit task':'New task'}</h3>
+    <div class="field"><label class="field-label">Title</label><input type="text" id="m-title" value="${esc(t.title)}"/></div>
+    <div class="field"><label class="field-label">When</label><div class="pill-group" data-field="urgency"><button class="pill ${t.urgency==='today'?'active':''}" data-val="today">Today</button><button class="pill ${t.urgency==='week'?'active':''}" data-val="week">This week</button><button class="pill ${t.urgency==='someday'?'active':''}" data-val="someday">Someday</button></div></div>
+    <div class="field"><label class="field-label">Context</label><div class="pill-group" data-field="context"><button class="pill ${t.context==='work'?'active':''}" data-val="work">Work</button><button class="pill ${t.context==='personal'?'active':''}" data-val="personal">Personal</button></div></div>
+    <div class="field"><label class="field-label">Energy</label><div class="pill-group" data-field="energy"><button class="pill ${t.energy==='quick'?'active':''}" data-val="quick">Quick</button><button class="pill ${t.energy==='deep'?'active':''}" data-val="deep">Deep focus</button><button class="pill ${t.energy==='errand'?'active':''}" data-val="errand">Errand</button></div></div>
+    <div class="field"><label class="field-label">🔁 Repeat</label><div class="pill-group" data-field="repeat"><button class="pill ${(t.repeat||'none')==='none'?'active':''}" data-val="none">Once</button><button class="pill ${t.repeat==='daily'?'active':''}" data-val="daily">Daily</button><button class="pill ${t.repeat==='weekly'?'active':''}" data-val="weekly">Weekly</button><button class="pill ${t.repeat==='biweekly'?'active':''}" data-val="biweekly">2 weeks</button><button class="pill ${t.repeat==='monthly'?'active':''}" data-val="monthly">Monthly</button></div></div>
+    ${state.quests.length>0?`<div class="field"><label class="field-label">Quest (optional)</label><select id="m-quest"><option value="">— none —</option>${questOptions}</select></div>`:''}
+    <div class="field"><label class="field-label">Deadline</label><input type="date" id="m-deadline" value="${t.deadline||''}" /></div>
+    <div class="field"><label class="field-label">Notes</label><textarea id="m-notes" rows="3">${esc(t.notes)}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-secondary" id="m-cancel">Cancel</button><button class="btn btn-primary" id="m-save">Save</button></div>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('m-title').focus(),50);
+}
+function closeModal(){document.getElementById('modal-mount').innerHTML='';editingId=null;}
+function openQuestModal(){
+  document.getElementById('modal-mount').innerHTML=`<div class="modal-bg" id="modal-bg"><div class="modal" id="modal">
+    <h3>New quest</h3>
+    <p style="font-size:13px;color:var(--ink-2);font-style:italic;margin:0 0 1rem;">A quest groups related tasks. Finish all to claim a reward.</p>
+    <div class="field"><label class="field-label">Quest name</label><input type="text" id="q-title" placeholder="e.g. Launch the website"/></div>
+    <div class="field"><label class="field-label">Description (optional)</label><input type="text" id="q-desc" placeholder="what's this about"/></div>
+    <div class="field"><label class="field-label">Pick an emoji</label><div class="pill-group" id="q-emoji-grid">${QUEST_EMOJIS.map((e,i)=>`<button class="pill ${i===0?'active':''}" data-emoji="${e}">${e}</button>`).join('')}</div></div>
+    <div class="field"><label class="field-label">Reward (coins)</label><input type="number" id="q-reward" value="50" min="0"/></div>
+    <div class="modal-actions"><button class="btn btn-secondary" id="m-cancel">Cancel</button><button class="btn btn-primary" id="q-save">Create quest</button></div>
+  </div></div>`;
+  let selectedEmoji=QUEST_EMOJIS[0];
+  document.querySelectorAll('#q-emoji-grid .pill').forEach(p=>{p.onclick=()=>{document.querySelectorAll('#q-emoji-grid .pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');selectedEmoji=p.dataset.emoji;};});
+  document.getElementById('q-save').onclick=()=>{
+    const title=document.getElementById('q-title').value.trim();if(!title)return;
+    state.quests.push({id:'q'+Date.now(),title,desc:document.getElementById('q-desc').value.trim(),emoji:selectedEmoji,reward:parseInt(document.getElementById('q-reward').value)||0,claimed:false,created:Date.now()});
+    save();closeModal();render();toast('quest started ⚔️');
+  };
+}
+function openBreakdown(task){
+  document.getElementById('modal-mount').innerHTML=`<div class="modal-bg" id="modal-bg"><div class="modal" id="modal">
+    <h3>✨ Break it down</h3>
+    <p style="font-size:13px;color:var(--ink-2);font-style:italic;margin:0 0 1rem;">"${esc(task.title)}" too big? Add tiny steps — each 2-15 min.</p>
+    <div class="field"><label class="field-label">Steps (one per line)</label><textarea id="bd-steps" rows="6" placeholder="open the file&#10;read the requirements&#10;sketch on paper for 5 min"></textarea></div>
+    <div style="background:var(--accent-soft);padding:10px;border-radius:10px;font-size:11px;color:var(--ink-2);margin-bottom:10px;"><strong style="color:var(--ink);">Stuck?</strong> "Ask Claude" copies a prompt to clipboard.</div>
+    <div class="modal-actions"><button class="btn btn-secondary" id="bd-claude">Ask Claude</button><button class="btn btn-secondary" id="m-cancel">Cancel</button><button class="btn btn-primary" id="bd-save">Add steps</button></div>
+  </div></div>`;
+  document.getElementById('bd-claude').onclick=()=>{const prompt=`Break this task into 5-10 tiny concrete steps. Each 2-15 minutes, starts with a verb.\n\nTask: ${task.title}${task.notes?'\nContext: '+task.notes:''}\n\nFormat: numbered list, no preamble.`;navigator.clipboard.writeText(prompt).then(()=>toast('copied'));};
+  document.getElementById('bd-save').onclick=()=>{
+    const text=document.getElementById('bd-steps').value.trim();if(!text){closeModal();return;}
+    const lines=text.split('\n').map(l=>l.trim().replace(/^[-*•\d.)\s]+/,'').trim()).filter(Boolean);
+    if(!task.subtasks)task.subtasks=[];
+    lines.forEach(l=>task.subtasks.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,4),text:l,done:false}));
+    save();closeModal();render();toast(`+${lines.length} steps`);
+  };
+}
+function startTimer(task,minutes=25,isBodyDouble=false){
+  timerState={task,total:minutes*60,remaining:minutes*60,paused:false,interval:null,isBodyDouble};
+  if(isBodyDouble){
+    bodyDoubleInterval=setInterval(()=>{const el=document.getElementById('body-double-msg');if(el){el.style.opacity='0';setTimeout(()=>{el.textContent=bodyDoubleMessages[Math.floor(Math.random()*bodyDoubleMessages.length)];el.style.opacity='1';},400);}},8000);
+  }
+  renderTimer();
+  timerState.interval=setInterval(()=>{
+    if(!timerState.paused){
+      timerState.remaining--;
+      if(timerState.remaining<=0){
+        clearInterval(timerState.interval);
+        if(bodyDoubleInterval){clearInterval(bodyDoubleInterval);bodyDoubleInterval=null;}
+        timerState.remaining=0;renderTimer();celebrate();
+        const reward=isBodyDouble?3:(minutes>=25?5:2);
+        meta.coins=(meta.coins||0)+reward;saveMeta();
+        toast(`time! +${reward} 🪙. take a break.`);return;
+      }
+      renderTimer();
+    }
+  },1000);
+}
+function renderTimer(){
+  if(!timerState){document.getElementById('timer-mount').innerHTML='';return;}
+  const{task,total,remaining,paused,isBodyDouble}=timerState;
+  const mins=Math.floor(remaining/60),secs=remaining%60;
+  const display=`${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  const pct=((total-remaining)/total)*100;
+  const r=120,c=2*Math.PI*r,offset=c-(pct/100)*c;
+  // If timer DOM doesn't exist yet, build it once
+  if(!document.getElementById('timer-display-num')){
+    document.getElementById('timer-mount').innerHTML=`<div class="timer-overlay"><div class="glass timer-card">
+      <div class="timer-blob">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</div>
+      <div class="timer-status" id="timer-status-text">${paused?'paused':remaining===0?'done':isBodyDouble?'working together':'focusing'}</div>
+      ${isBodyDouble?`<div class="body-double-msg" id="body-double-msg">${bodyDoubleMessages[0]}</div>`:`<div class="timer-task">${task?esc(task.title):'focus session'}</div>`}
+      <div class="timer-ring"><svg width="260" height="260"><circle cx="130" cy="130" r="${r}" stroke="rgba(255,255,255,0.4)" stroke-width="6" fill="none"/><circle id="timer-progress-ring" cx="130" cy="130" r="${r}" stroke="url(#tg)" stroke-width="6" fill="none" stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 1s linear"/><defs><linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6B5BD6"/><stop offset="100%" stop-color="#FF6B9D"/></linearGradient></defs></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><div class="timer-display" id="timer-display-num">${display}</div></div></div>
+      <div style="display:flex;gap:10px;" id="timer-buttons">${remaining>0?`<button class="btn btn-secondary" id="t-pause">${paused?'resume':'pause'}</button>`:''}<button class="btn btn-primary" id="t-stop">${remaining===0?'nice':'stop'}</button></div>
+    </div></div>`;
+    const pause=document.getElementById('t-pause');if(pause)pause.onclick=()=>{timerState.paused=!timerState.paused;updateTimerUI();};
+    document.getElementById('t-stop').onclick=stopTimer;
+    return;
+  }
+  // Otherwise just update the changing parts
+  updateTimerUI();
+}
+function updateTimerUI(){
+  if(!timerState)return;
+  const{total,remaining,paused,isBodyDouble}=timerState;
+  const mins=Math.floor(remaining/60),secs=remaining%60;
+  const display=`${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  const r=120,c=2*Math.PI*r;
+  const pct=((total-remaining)/total)*100;
+  const offset=c-(pct/100)*c;
+  const numEl=document.getElementById('timer-display-num');if(numEl)numEl.textContent=display;
+  const ringEl=document.getElementById('timer-progress-ring');if(ringEl)ringEl.setAttribute('stroke-dashoffset',offset);
+  const statusEl=document.getElementById('timer-status-text');if(statusEl)statusEl.textContent=paused?'paused':remaining===0?'done':isBodyDouble?'working together':'focusing';
+  // Only rebuild buttons if state changed
+  const btns=document.getElementById('timer-buttons');
+  if(btns){
+    const pauseBtn=document.getElementById('t-pause');
+    if(remaining===0&&pauseBtn){pauseBtn.remove();}
+    if(pauseBtn)pauseBtn.textContent=paused?'resume':'pause';
+    const stopBtn=document.getElementById('t-stop');
+    if(stopBtn&&remaining===0)stopBtn.textContent='nice';
+  }
+}
+function stopTimer(){if(timerState&&timerState.interval)clearInterval(timerState.interval);if(bodyDoubleInterval){clearInterval(bodyDoubleInterval);bodyDoubleInterval=null;}timerState=null;renderTimer();}
+function rouletteTask(){
+  const active=state.tasks.filter(t=>!t.done);
+  if(active.length===0){toast('no tasks to pick from');return;}
+  const weighted=[];active.forEach(t=>{const w=t.urgency==='today'?5:t.urgency==='week'?3:1;for(let i=0;i<w;i++)weighted.push(t);});
+  const picked=weighted[Math.floor(Math.random()*weighted.length)];
+  state.view='now';render();toast(`🎲 the dice say: ${picked.title}`);
+}
+function freezeStreak(){
+  const today=new Date();
+  const weekStart=new Date(today.setDate(today.getDate()-today.getDay()));
+  const weekKey=weekStart.toISOString().slice(0,10);
+  if(meta.lastFreezeWeek!==weekKey){meta.freezesUsedThisWeek=0;meta.lastFreezeWeek=weekKey;}
+  if(meta.freezesUsedThisWeek>=1){toast('already used this week. resets sunday.');return;}
+  meta.lastDoneDate=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  meta.freezesUsedThisWeek=1;meta.hp=Math.min(100,meta.hp+15);saveMeta();
+  toast('🧊 streak frozen. you live to fight another day.');render();
+}
+document.getElementById('blob-stage').addEventListener('click',()=>{
+  const reactions=['hi','sup','blob','*wiggle*','mrrrp','one more click','i love you','you again'];
+  toast(reactions[Math.floor(Math.random()*reactions.length)]);
+  document.getElementById('blob-svg').style.transform='scale(0.9) rotate('+(Math.random()*20-10)+'deg)';
+  setTimeout(()=>{document.getElementById('blob-svg').style.transform='';},200);
+});
+document.addEventListener('click',(e)=>{
+  const tab=e.target.closest('.tab');
+  if(tab){state.view=tab.dataset.view;render();return;}
+  const chip=e.target.closest('.chip');
+  if(chip){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));chip.classList.add('active');state.filter=chip.dataset.filter;render();return;}
+  const action=e.target.closest('[data-action]');
+  if(action){
+    const a=action.dataset.action;
+    if(a==='checkin'){
+      const mood=action.dataset.mood;const today=new Date().toISOString().slice(0,10);
+      meta.checkins.push({date:today,mood});meta.lastCheckinDate=today;
+      meta.coins=(meta.coins||0)+2;saveMeta();
+      toast(`logged ${mood} · +2 🪙`);renderCheckin();renderBlob();return;
+    }
+    if(a==='dismiss-checkin'){meta.checkinDismissedDate=new Date().toISOString().slice(0,10);saveMeta();renderCheckin();return;}
+    if(a==='open-chest'){
+      const chest=(meta.chests||[]).find(c=>c.id===action.dataset.chest);
+      if(chest&&!chest.opened)openChest(chest);
+      return;
+    }
+    if(a==='fusion-slot'){
+      const slotIdx=parseInt(action.dataset.slot);
+      const owned=Object.keys(BLOBS).filter(id=>meta.unlocked.includes(id));
+      if(owned.length<2){toast('unlock at least 2 blobs first');return;}
+      // Cycle through unlocked blobs
+      const current=fusionSlots[slotIdx];
+      const idx=current?owned.indexOf(current):-1;
+      fusionSlots[slotIdx]=owned[(idx+1)%owned.length];
+      render();return;
+    }
+    if(a==='fuse'){tryFusion();return;}
+    if(a==='select-blob'){const id=action.dataset.blob;if(meta.unlocked.includes(id)){meta.currentBlob=id;saveMeta();render();toast(`equipped: ${BLOBS[id].name}`);}else toast(`locked. ${BLOBS[id].unlock-meta.totalDone} more tasks.`);return;}
+    if(a==='checkin'){
+      const m=action.dataset.mood;const today=new Date().toISOString().slice(0,10);
+      if(!meta.checkins)meta.checkins=[];
+      meta.checkins.push({date:today,mood:m,label:moods[m]});
+      meta.lastCheckinDate=today;saveMeta();render();
+      toast(`logged: ${m} ${moods[m]}`);
+      return;
+    }
+    if(a==='dismiss-checkin'){
+      meta.checkinDismissedDate=new Date().toISOString().slice(0,10);
+      saveMeta();render();return;
+    }
+    if(a==='fusion-slot'){
+      const slot=parseInt(action.dataset.slot);
+      // pick from unlocked blobs (not already in other slot)
+      const available=Object.keys(BLOBS).filter(b=>meta.unlocked.includes(b)&&b!==fusionSlots[1-slot]);
+      if(available.length===0){toast('no blobs available');return;}
+      const current=fusionSlots[slot];
+      const idx=current?available.indexOf(current):-1;
+      fusionSlots[slot]=available[(idx+1)%available.length];
+      render();return;
+    }
+    if(a==='fuse'){tryFusion();return;}
+    if(a==='open-chest'){
+      const id=action.dataset.chest;
+      const chest=meta.chests.find(c=>c.id===id);
+      if(chest)openChest(chest);
+      return;
+    }
+    if(a==='show-pill'){
+      const p=action.dataset.pill;
+      const el=document.getElementById(`${p}-pill`);
+      if(el&&el.title)toast(el.title);
+      return;
+    }
+    if(a==='travel'){const id=action.dataset.region;if(meta.unlockedRegions.includes(id)){meta.currentRegion=id;saveMeta();render();toast(`traveled to ${REGIONS[id].name}`);}else toast(`locked. need ${REGIONS[id].unlock} done.`);return;}
+    if(a==='buy'){const id=action.dataset.item,item=SHOP_ITEMS[id];if(meta.coins>=item.cost){meta.coins-=item.cost;meta.ownedItems.push(id);if(item.type==='accessory')meta.equippedItems.push(id);saveMeta();render();toast(`got ${item.name}!`);}else toast(`need ${item.cost-meta.coins} more coins`);return;}
+    if(a==='toggle-equip'){const id=action.dataset.item;if(meta.equippedItems.includes(id))meta.equippedItems=meta.equippedItems.filter(x=>x!==id);else meta.equippedItems.push(id);saveMeta();render();return;}
+    if(a==='del-quest'){const id=action.dataset.id;if(confirm('delete this quest?')){state.quests=state.quests.filter(q=>q.id!==id);state.tasks.forEach(t=>{if(t.questId===id)t.questId=null;});save();render();}return;}
+    if(a==='claim-quest'){const id=action.dataset.id;const q=state.quests.find(x=>x.id===id);if(q&&!q.claimed){q.claimed=true;meta.coins+=q.reward;saveMeta();save();celebrate();lootPopup(`🏆 quest complete! +${q.reward} 🪙`);render();}return;}
+    const id=action.dataset.id,task=state.tasks.find(t=>t.id===id);
+    if(a==='toggle'){const wasDone=task.done;task.done=!task.done;if(!wasDone&&task.done){const lootMsg=recordDone(task);celebrate();lootPopup(lootMsg);checkNpcReward();const el=document.querySelector(`[data-task="${id}"]`);if(el)el.classList.add('completing');}save();setTimeout(render,250);}
+    else if(a==='toggle-sub'){const s=task.subtasks.find(x=>x.id===action.dataset.sub);const wasDone=s.done;s.done=!s.done;if(!wasDone&&s.done){toast('one closer ✓');if(task.subtasks.every(x=>x.done)&&!task.done){task.done=true;const lootMsg=recordDone(task);celebrate();lootPopup(lootMsg);checkNpcReward();}}save();render();}
+    else if(a==='del-sub'){task.subtasks=task.subtasks.filter(x=>x.id!==action.dataset.sub);save();render();}
+    else if(a==='add-sub'){const text=prompt('what tiny step?');if(text&&text.trim()){if(!task.subtasks)task.subtasks=[];task.subtasks.push({id:'s'+Date.now(),text:text.trim(),done:false});save();render();}}
+    else if(a==='edit')openModal(task);
+    else if(a==='delete'){if(confirm('delete this task?')){state.tasks=state.tasks.filter(t=>t.id!==id);save();render();toast('gone');}}
+    else if(a==='breakdown')openBreakdown(task);
+    else if(a==='timer')startTimer(task,25);
+    else if(a==='timer-quick')startTimer(task,2);
+    return;
+  }
+  const pill=e.target.closest('.pill');
+  if(pill&&pill.parentElement.dataset.field){const f=pill.parentElement.dataset.field;pill.parentElement.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));pill.classList.add('active');document.getElementById('modal').dataset[f]=pill.dataset.val;return;}
+  if(e.target.id==='m-cancel'||e.target.id==='modal-bg'){closeModal();return;}
+  if(e.target.id==='m-save'){
+    const m=document.getElementById('modal'),title=document.getElementById('m-title').value.trim();if(!title)return;
+    const questSel=document.getElementById('m-quest');
+    const data={title,urgency:m.dataset.urgency,context:m.dataset.context,energy:m.dataset.energy,deadline:document.getElementById('m-deadline').value||null,notes:document.getElementById('m-notes').value.trim(),questId:questSel?(questSel.value||null):null,repeat:m.dataset.repeat||'none'};
+    if(editingId)Object.assign(state.tasks.find(t=>t.id===editingId),data);
+    else state.tasks.push({id:uid(),done:false,subtasks:[],created:Date.now(),questId:null,...data});
+    save();closeModal();render();return;
+  }
+  if(e.target.id==='capture-btn')addQuick();
+  if(e.target.id==='roulette-btn')rouletteTask();
+  if(e.target.id==='twomin-btn')startTimer(null,2);
+  if(e.target.id==='bodydouble-btn')startTimer({title:'whatever you want'},25,true);
+  if(e.target.id==='freeze-btn')freezeStreak();
+  if(e.target.id==='notif-btn')requestNotifPermission();
+  if(e.target.id==='notif-btn')requestNotifPermission();
+  if(e.target.id==='export-btn')exportJSON();
+  if(e.target.id==='import-btn')document.getElementById('import-file').click();
+  if(e.target.id==='copy-btn')copyAsText();
+});
+function addQuick(){
+  const inp=document.getElementById('capture-input'),title=inp.value.trim();if(!title)return;
+  state.tasks.push({id:uid(),title,done:false,urgency:'week',context:'work',energy:'quick',deadline:null,notes:'',subtasks:[],created:Date.now(),questId:null});
+  inp.value='';save();render();
+  const captured=['noted','on it','gotcha','added','logged'];toast(captured[Math.floor(Math.random()*captured.length)]);
+}
+document.addEventListener('keydown',(e)=>{if(e.target.id==='capture-input'&&e.key==='Enter')addQuick();if(e.key==='Escape'){if(timerState)stopTimer();else if(editingId!==null)closeModal();}});
+function exportJSON(){const blob=new Blob([JSON.stringify({tasks:state.tasks,quests:state.quests,meta},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`bloblist-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);toast('exported');}
+document.getElementById('import-file').addEventListener('change',(e)=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=(ev)=>{try{const data=JSON.parse(ev.target.result);if(data.tasks){if(confirm(`import? this replaces everything.`)){state.tasks=data.tasks;state.quests=data.quests||[];if(data.meta){meta={...meta,...data.meta};saveMeta();}save();render();toast('imported');}}}catch{alert('invalid file');}};reader.readAsText(file);});
+function copyAsText(){const lines=state.tasks.filter(t=>!t.done).map(t=>{const tags=[t.urgency,t.context,t.energy].filter(Boolean).join('/');const dl=t.deadline?` [due ${t.deadline}]`:'';let s=`- ${t.title} (${tags})${dl}`;if(t.subtasks&&t.subtasks.length)s+='\n'+t.subtasks.map(x=>`  - [${x.done?'x':' '}] ${x.text}`).join('\n');if(t.notes)s+=`\n  notes: ${t.notes}`;return s;}).join('\n');navigator.clipboard.writeText(lines).then(()=>toast('copied'));}
+load();
+</script>
+</body>
+</html>
