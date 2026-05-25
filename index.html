@@ -4,32 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bloblist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-grad-1: #FFE5EC; --bg-grad-2: #C9E4FF; --bg-grad-3: #FFF4D6;
-    --orb-1: #FFB3C6; --orb-2: #A4C8FF; --orb-3: #FFD6A5;
-    --ink: #2D2640; --ink-2: #6B6386; --ink-3: #9590A8;
-    --glass-bg: rgba(255,255,255,0.55); --glass-bg-strong: rgba(255,255,255,0.75);
-    --glass-border: rgba(255,255,255,0.6); --glass-shadow: rgba(45,38,64,0.08);
-    --accent: #6B5BD6; --accent-soft: rgba(107,91,214,0.12);
-    --pink: #FF6B9D; --pink-soft: rgba(255,107,157,0.12);
-    --green: #34C77B; --green-soft: rgba(52,199,123,0.12);
-    --orange: #FF8A3D; --orange-soft: rgba(255,138,61,0.12);
-    --danger: #E64545; --danger-soft: rgba(230,69,69,0.12);
-    --gold: #E5A82E; --gold-soft: rgba(229,168,46,0.15);
+    /* Muted palette: sage + lilac + sand */
+    --bg-grad-1: #E8EFE5; --bg-grad-2: #E5E0EC; --bg-grad-3: #F0EAE0;
+    --orb-1: #B8C9B0; --orb-2: #BAB0CC; --orb-3: #D9C8B0;
+    /* Type colors — higher contrast for readability */
+    --ink: #1F1B2E; --ink-2: #524C66; --ink-3: #807A91;
+    --glass-bg: rgba(255,255,255,0.6); --glass-bg-strong: rgba(255,255,255,0.82);
+    --glass-border: rgba(255,255,255,0.55); --glass-shadow: rgba(45,38,64,0.06);
+    /* Accents — deeper, more grown-up versions */
+    --accent: #6B5797; --accent-soft: rgba(107,87,151,0.12);
+    --pink: #C97090; --pink-soft: rgba(201,112,144,0.12);
+    --green: #5A9A6E; --green-soft: rgba(90,154,110,0.12);
+    --orange: #C77A4A; --orange-soft: rgba(199,122,74,0.12);
+    --danger: #B84545; --danger-soft: rgba(184,69,69,0.12);
+    --gold: #B58A2E; --gold-soft: rgba(181,138,46,0.12);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg-grad-1: #1F1A2E; --bg-grad-2: #2A2444; --bg-grad-3: #1A1F3A;
-      --orb-1: #6B4FA8; --orb-2: #4A6FA8; --orb-3: #A86B6B;
-      --ink: #F0EDFF; --ink-2: #B5B0CC; --ink-3: #7A7595;
-      --glass-bg: rgba(40,35,60,0.5); --glass-bg-strong: rgba(40,35,60,0.75);
+      --bg-grad-1: #1F1B26; --bg-grad-2: #25212E; --bg-grad-3: #1E1D24;
+      --orb-1: #5A6A55; --orb-2: #5A5570; --orb-3: #6A5E50;
+      --ink: #EDE9F0; --ink-2: #B5AFC0; --ink-3: #7A7585;
+      --glass-bg: rgba(40,35,55,0.55); --glass-bg-strong: rgba(40,35,55,0.78);
       --glass-border: rgba(255,255,255,0.1);
     }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif; color: var(--ink); line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100vh; background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%, var(--bg-grad-3) 100%); background-attachment: fixed; overflow-x: hidden; position: relative; }
-  body::before, body::after { content: ''; position: fixed; border-radius: 50%; filter: blur(60px); opacity: 0.5; z-index: 0; pointer-events: none; will-change: transform; }
+  body { margin: 0; font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 16px; color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased; min-height: 100vh; background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%, var(--bg-grad-3) 100%); background-attachment: fixed; overflow-x: hidden; position: relative; }
+  body::before, body::after { content: ''; position: fixed; border-radius: 50%; filter: blur(60px); opacity: 0.4; z-index: 0; pointer-events: none; will-change: transform; }
   body::before { width: 380px; height: 380px; background: var(--orb-1); top: -100px; left: -100px; animation: float1 60s ease-in-out infinite; }
   body::after { width: 320px; height: 320px; background: var(--orb-2); bottom: -80px; right: -80px; animation: float2 75s ease-in-out infinite; }
   .orb-3 { display: none; }
@@ -46,35 +52,35 @@
   .blob-svg { width: 75%; height: 75%; }
   .blob-info { flex: 1; min-width: 0; }
   .blob-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
-  .blob-name { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
-  .pill-info { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; border: 0.5px solid transparent; }
+  .blob-name { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .pill-info { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 15px; font-weight: 600; border: 0.5px solid transparent; }
   .pill-streak { background: var(--orange-soft); color: var(--orange); border-color: rgba(255,138,61,0.2); }
   .pill-streak.zero { opacity: 0.4; }
   .pill-coins { background: var(--gold-soft); color: var(--gold); border-color: rgba(229,168,46,0.25); }
   .pill-hp { background: var(--danger-soft); color: var(--danger); border-color: rgba(230,69,69,0.2); }
   .pill-hp.full { background: var(--green-soft); color: var(--green); border-color: rgba(52,199,123,0.2); }
-  .blob-mood { font-size: 12px; color: var(--ink-2); min-height: 18px; font-style: italic; }
+  .blob-mood { font-size: 14px; color: var(--ink-2); min-height: 18px; font-style: italic; }
   .level-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
   .level-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.4); border-radius: 999px; overflow: hidden; border: 0.5px solid var(--glass-border); }
   .level-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--pink)); transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1); border-radius: 999px; }
-  .level-text { font-size: 10px; color: var(--ink-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .level-text { font-size: 14px; color: var(--ink-2); font-weight: 600; font-variant-numeric: tabular-nums; }
   .tabs { display: flex; gap: 3px; margin-bottom: 1rem; background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 14px; padding: 4px; box-shadow: 0 4px 16px var(--glass-shadow); overflow-x: auto; }
-  .tab { flex: 1; padding: 8px 6px; border: none; background: transparent; border-radius: 10px; font-family: inherit; font-size: 12px; font-weight: 500; color: var(--ink-2); cursor: pointer; transition: all 0.2s; white-space: nowrap; min-width: fit-content; }
+  .tab { flex: 1; padding: 10px 8px; border: none; background: transparent; border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ink-2); cursor: pointer; transition: all 0.2s; white-space: nowrap; min-width: fit-content; letter-spacing: -0.1px; }
   .tab.active { background: var(--glass-bg-strong); color: var(--ink); font-weight: 600; }
   .capture { display: flex; gap: 8px; margin-bottom: 0.75rem; }
-  .capture input { flex: 1; padding: 12px 16px; border: 0.5px solid var(--glass-border); border-radius: 14px; background: var(--glass-bg); backdrop-filter: blur(10px); color: var(--ink); font-family: inherit; font-size: 14px; outline: none; box-shadow: 0 4px 16px var(--glass-shadow); }
+  .capture input { flex: 1; padding: 14px 18px; border: 0.5px solid var(--glass-border); border-radius: 14px; background: var(--glass-bg); backdrop-filter: blur(10px); color: var(--ink); font-family: inherit; font-size: 16px; outline: none; box-shadow: 0 4px 16px var(--glass-shadow); }
   .capture input:focus { border-color: var(--accent); }
   .capture input::placeholder { color: var(--ink-3); }
   .quick-row { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
-  .btn { padding: 12px 18px; border-radius: 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 0.5px solid var(--glass-border); box-shadow: 0 4px 16px var(--glass-shadow); transition: all 0.2s; backdrop-filter: blur(10px); }
+  .btn { padding: 12px 18px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; border: 0.5px solid var(--glass-border); box-shadow: 0 4px 16px var(--glass-shadow); transition: all 0.2s; backdrop-filter: blur(10px); }
   .btn:hover { transform: translateY(-1px); }
   .btn-primary { background: var(--accent); color: white; border-color: transparent; }
   .btn-secondary { background: var(--glass-bg-strong); color: var(--ink); }
   .btn-success { background: var(--green); color: white; border-color: transparent; }
   .btn-pink { background: var(--pink); color: white; border-color: transparent; }
-  .btn-small { padding: 8px 14px; font-size: 12px; border-radius: 10px; }
+  .btn-small { padding: 8px 14px; font-size: 14px; border-radius: 10px; }
   .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
-  .chip { padding: 5px 12px; border-radius: 999px; border: 0.5px solid var(--glass-border); background: var(--glass-bg); backdrop-filter: blur(10px); font-family: inherit; font-size: 11px; font-weight: 500; color: var(--ink-2); cursor: pointer; }
+  .chip { padding: 5px 12px; border-radius: 999px; border: 0.5px solid var(--glass-border); background: var(--glass-bg); backdrop-filter: blur(10px); font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ink-2); cursor: pointer; }
   .chip.active { background: var(--ink); color: white; border-color: transparent; }
   .task { background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 16px; padding: 14px 16px; margin-bottom: 8px; box-shadow: 0 4px 16px var(--glass-shadow); transition: all 0.25s; position: relative; overflow: hidden; }
   .task:hover { transform: translateY(-2px); }
@@ -82,16 +88,16 @@
   .task.completing { animation: completePulse 0.7s ease-out; }
   @keyframes completePulse { 0%{transform:scale(1);} 40%{transform:scale(1.02); background:var(--green-soft);} 100%{transform:scale(1);} }
   .task-main { display: flex; align-items: flex-start; gap: 12px; }
-  .check-btn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ink-3); background: transparent; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; transition: all 0.2s; margin-top: 1px; }
+  .check-btn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ink-3); background: transparent; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; transition: all 0.2s; margin-top: 1px; }
   .check-btn:hover { border-color: var(--accent); transform: scale(1.1); }
   .check-btn.checked { background: var(--green); color: white; border-color: var(--green); }
   .task-content { flex: 1; min-width: 0; }
-  .task-title { font-size: 14px; font-weight: 500; line-height: 1.4; cursor: pointer; }
+  .task-title { font-size: 16px; font-weight: 500; line-height: 1.45; cursor: pointer; }
   .task.done .task-title { text-decoration: line-through; color: var(--ink-2); }
-  .deadline { font-size: 10px; font-weight: 500; margin-top: 4px; display: inline-block; padding: 2px 8px; border-radius: 5px; background: var(--accent-soft); color: var(--ink-2); }
+  .deadline { font-size: 12px; font-weight: 500; margin-top: 4px; display: inline-block; padding: 3px 9px; border-radius: 6px; background: var(--accent-soft); color: var(--ink-2); }
   .deadline.urgent { background: var(--danger-soft); color: var(--danger); font-weight: 600; }
   .meta { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
-  .tag { font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: 500; }
+  .tag { font-size: 12px; padding: 3px 9px; border-radius: 6px; font-weight: 500; }
   .tag-today { background: var(--danger-soft); color: var(--danger); }
   .tag-week { background: var(--orange-soft); color: var(--orange); }
   .tag-someday { background: var(--accent-soft); color: var(--ink-2); }
@@ -102,46 +108,47 @@
   .tag-errand { background: var(--orange-soft); color: var(--orange); }
   .tag-quest { background: var(--gold-soft); color: var(--gold); border: 0.5px solid rgba(229,168,46,0.3); }
   .tag-recurring { background: rgba(107,91,214,0.12); color: var(--accent); border: 0.5px solid rgba(107,91,214,0.25); }
-  .actions { display: flex; gap: 2px; margin-left: auto; opacity: 0.4; }
+  .actions { display: flex; gap: 4px; margin-left: auto; opacity: 0.7; }
   .task:hover .actions { opacity: 1; }
-  .icon-btn { background: transparent; border: none; padding: 4px 6px; cursor: pointer; color: var(--ink-3); border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .icon-btn { background: transparent; border: none; padding: 8px 10px; cursor: pointer; color: var(--ink-3); border-radius: 8px; font-size: 18px; font-family: inherit; min-width: 36px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
   .icon-btn:hover { background: var(--accent-soft); color: var(--ink); }
+  .icon-btn[data-action="delete"]:hover { background: var(--danger-soft); color: var(--danger); }
   .subtasks { margin-top: 10px; padding: 10px 12px; background: rgba(255,255,255,0.3); border: 0.5px solid var(--glass-border); border-radius: 12px; }
-  .subtask { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; }
+  .subtask { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 14px; }
   .subtask.done { opacity: 0.5; text-decoration: line-through; }
-  .sub-check { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--ink-3); background: transparent; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+  .sub-check { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--ink-3); background: transparent; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
   .sub-check.checked { background: var(--green); border-color: var(--green); color: white; }
-  .add-sub { font-size: 11px; color: var(--ink-3); background: none; border: none; padding: 3px 0; cursor: pointer; font-family: inherit; font-weight: 500; }
+  .add-sub { font-size: 15px; color: var(--ink-3); background: none; border: none; padding: 3px 0; cursor: pointer; font-family: inherit; font-weight: 500; }
   .sub-progress { height: 3px; background: rgba(255,255,255,0.3); border-radius: 999px; overflow: hidden; margin-top: 8px; }
   .sub-progress-fill { height: 100%; background: var(--green); transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1); }
-  .sub-counter { font-size: 10px; color: var(--ink-3); margin-top: 4px; font-weight: 500; }
-  .notes { margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,0.3); border-left: 2px solid var(--accent); border-radius: 6px; font-size: 12px; color: var(--ink-2); white-space: pre-wrap; }
+  .sub-counter { font-size: 14px; color: var(--ink-3); margin-top: 4px; font-weight: 500; }
+  .notes { margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,0.3); border-left: 2px solid var(--accent); border-radius: 6px; font-size: 14px; color: var(--ink-2); white-space: pre-wrap; }
   .task-actions-row { margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
-  .mini-btn { padding: 5px 10px; border: 0.5px solid var(--glass-border); border-radius: 8px; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer; background: var(--glass-bg-strong); color: var(--ink); }
+  .mini-btn { padding: 7px 12px; border: 0.5px solid var(--glass-border); border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--glass-bg-strong); color: var(--ink); }
   .mini-btn-magic { background: var(--accent-soft); color: var(--accent); }
   .mini-btn-timer { background: var(--green-soft); color: var(--green); }
   .mini-btn-quick { background: var(--pink-soft); color: var(--pink); }
   .empty { text-align: center; padding: 2rem 1rem; color: var(--ink-2); }
   .empty-blob { width: 80px; height: 80px; margin: 0 auto 1rem; opacity: 0.5; }
-  .empty-text { font-style: italic; font-size: 13px; }
+  .empty-text { font-style: italic; font-size: 15px; }
   .now-card { padding: 2rem 1.5rem; text-align: center; }
-  .now-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 1rem; }
+  .now-label { font-size: 14px; font-weight: 600; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 1rem; }
   .now-title { font-size: 20px; font-weight: 600; margin-bottom: 1rem; line-height: 1.3; }
   .now-meta { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
   .now-step { background: var(--accent-soft); border: 0.5px solid rgba(107,91,214,0.2); border-radius: 12px; padding: 12px; margin: 1rem 0; }
-  .now-step-label { font-size: 9px; font-weight: 700; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .now-step-label { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
   .now-step-text { font-size: 14px; font-weight: 500; }
   .now-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 1.25rem; }
   .modal-bg { position: fixed; inset: 0; background: rgba(45,38,64,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; animation: fadeIn 0.2s; }
   @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
   .modal { background: var(--glass-bg-strong); backdrop-filter: blur(16px); border: 0.5px solid var(--glass-border); border-radius: 22px; padding: 1.5rem; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(45,38,64,0.2); animation: pop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
   @keyframes pop { from{transform:scale(0.92) translateY(20px); opacity:0;} to{transform:scale(1) translateY(0); opacity:1;} }
-  .modal h3 { margin: 0 0 1rem; font-size: 17px; font-weight: 600; }
+  .modal h3 { margin: 0 0 1rem; font-size: 18px; font-weight: 600; }
   .field { margin-bottom: 14px; }
-  .field-label { font-size: 10px; color: var(--ink-2); margin-bottom: 5px; display: block; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
-  .field input, .field textarea, .field select { width: 100%; padding: 10px 14px; border: 0.5px solid var(--glass-border); border-radius: 11px; font-family: inherit; font-size: 13px; background: rgba(255,255,255,0.5); color: var(--ink); outline: none; }
+  .field-label { font-size: 14px; color: var(--ink-2); margin-bottom: 5px; display: block; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .field input, .field textarea, .field select { width: 100%; padding: 10px 14px; border: 0.5px solid var(--glass-border); border-radius: 11px; font-family: inherit; font-size: 15px; background: rgba(255,255,255,0.5); color: var(--ink); outline: none; }
   .pill-group { display: flex; gap: 5px; flex-wrap: wrap; }
-  .pill { padding: 6px 12px; border-radius: 999px; border: 0.5px solid var(--glass-border); background: rgba(255,255,255,0.4); font-family: inherit; font-size: 11px; font-weight: 500; color: var(--ink-2); cursor: pointer; }
+  .pill { padding: 6px 12px; border-radius: 999px; border: 0.5px solid var(--glass-border); background: rgba(255,255,255,0.4); font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ink-2); cursor: pointer; }
   .pill.active { background: var(--accent); color: white; border-color: transparent; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; flex-wrap: wrap; }
   .timer-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%, var(--bg-grad-3) 100%); display: flex; align-items: center; justify-content: center; z-index: 200; flex-direction: column; gap: 1.25rem; padding: 1.5rem; animation: fadeIn 0.3s; }
@@ -149,19 +156,37 @@
   .timer-blob { width: 90px; height: 90px; }
   .timer-blob svg { width: 100%; height: 100%; animation: bob 3s ease-in-out infinite; }
   @keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+  .working-blob svg { animation: workingBob 1.2s ease-in-out infinite; transform-origin: 50% 90%; }
+  @keyframes workingBob { 0%,100%{transform:translateY(0) rotate(-1deg);} 50%{transform:translateY(-3px) rotate(1deg);} }
+  .goober-activity { font-size: 15px; color: var(--ink-2); font-style: italic; min-height: 22px; transition: opacity 0.3s; text-align: center; }
+  .goober-emoji { font-size: 18px; margin-right: 4px; display: inline-block; animation: emojiWiggle 0.8s ease-in-out infinite; }
+  @keyframes emojiWiggle { 0%,100%{transform:rotate(-8deg);} 50%{transform:rotate(8deg);} }
+  .parallel-progress { width: 100%; max-width: 280px; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .parallel-row { display: flex; align-items: center; gap: 8px; }
+  .parallel-label { font-size: 14px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.5px; width: 48px; }
+  .parallel-bar { flex: 1; height: 6px; background: rgba(255,255,255,0.4); border-radius: 999px; overflow: hidden; border: 0.5px solid var(--glass-border); }
+  .parallel-fill { height: 100%; border-radius: 999px; transition: width 0.8s ease-out; }
+  .parallel-fill.you { background: linear-gradient(90deg, var(--accent), var(--pink)); }
+  .parallel-fill.goober { background: linear-gradient(90deg, var(--green), #95DDB5); }
+  .checkpoint { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 250; background: var(--glass-bg-strong); backdrop-filter: blur(16px); border: 0.5px solid var(--glass-border); border-radius: 18px; padding: 14px 18px; box-shadow: 0 8px 32px var(--glass-shadow); text-align: center; max-width: 320px; width: 90%; animation: checkpointIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes checkpointIn { from{transform:translateX(-50%) translateY(-20px) scale(0.9); opacity:0;} to{transform:translateX(-50%) translateY(0) scale(1); opacity:1;} }
+  .checkpoint-emoji { font-size: 28px; margin-bottom: 4px; }
+  .checkpoint-msg { font-size: 14px; font-weight: 600; }
+  .checkpoint-sub { font-size: 14px; color: var(--ink-2); margin: 4px 0 10px; font-style: italic; }
+  .checkpoint-actions { display: flex; gap: 6px; justify-content: center; }
   .timer-task { font-size: 15px; color: var(--ink-2); text-align: center; max-width: 380px; font-weight: 500; }
   .timer-display { font-size: 80px; font-weight: 200; letter-spacing: -2px; font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1; }
   .timer-ring { position: relative; width: 260px; height: 260px; }
   .timer-ring svg { transform: rotate(-90deg); }
-  .timer-status { font-size: 10px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
-  .body-double-msg { background: rgba(255,255,255,0.3); padding: 12px 16px; border-radius: 12px; font-size: 12px; color: var(--ink-2); font-style: italic; max-width: 360px; text-align: center; min-height: 38px; transition: opacity 0.4s; }
+  .timer-status { font-size: 14px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+  .body-double-msg { background: rgba(255,255,255,0.3); padding: 12px 16px; border-radius: 12px; font-size: 14px; color: var(--ink-2); font-style: italic; max-width: 360px; text-align: center; min-height: 38px; transition: opacity 0.4s; }
   .confetti { position: fixed; pointer-events: none; inset: 0; overflow: hidden; z-index: 300; }
   .confetti-piece { position: absolute; font-size: 22px; animation: tumble 2s ease-out forwards; }
   @keyframes tumble { 0%{transform:translateY(-20vh) rotate(0deg) scale(0); opacity:1;} 20%{transform:translateY(0) rotate(180deg) scale(1.2);} 100%{transform:translateY(120vh) rotate(720deg) scale(1); opacity:0;} }
-  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--glass-bg-strong); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); color: var(--ink); border-radius: 16px; padding: 12px 20px; font-size: 13px; font-weight: 500; z-index: 250; max-width: 90%; box-shadow: 0 8px 32px var(--glass-shadow); animation: bubbleIn 0.3s cubic-bezier(0.34,1.56,0.64,1), bubbleOut 0.3s ease-in 2.7s forwards; }
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--glass-bg-strong); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); color: var(--ink); border-radius: 16px; padding: 12px 20px; font-size: 15px; font-weight: 500; z-index: 250; max-width: 90%; box-shadow: 0 8px 32px var(--glass-shadow); animation: bubbleIn 0.3s cubic-bezier(0.34,1.56,0.64,1), bubbleOut 0.3s ease-in 2.7s forwards; }
   @keyframes bubbleIn { from{transform:translateX(-50%) translateY(30px) scale(0.9); opacity:0;} to{transform:translateX(-50%) translateY(0) scale(1); opacity:1;} }
   @keyframes bubbleOut { from{opacity:1;} to{transform:translateX(-50%) translateY(20px); opacity:0;} }
-  .loot-popup { position: fixed; bottom: 6rem; left: 50%; transform: translateX(-50%); z-index: 280; background: linear-gradient(135deg, var(--gold), var(--orange)); color: white; padding: 14px 22px; border-radius: 16px; font-size: 14px; font-weight: 600; box-shadow: 0 8px 32px rgba(229,168,46,0.4); animation: lootIn 0.4s cubic-bezier(0.34,1.56,0.64,1), lootOut 0.4s ease-in 2.6s forwards; }
+  .loot-popup { position: fixed; bottom: 6rem; left: 50%; transform: translateX(-50%); z-index: 280; background: linear-gradient(135deg, var(--gold), var(--orange)); color: white; padding: 14px 22px; border-radius: 16px; font-size: 15px; font-weight: 600; box-shadow: 0 8px 32px rgba(181,138,46,0.3); animation: lootIn 0.4s cubic-bezier(0.34,1.56,0.64,1), lootOut 0.4s ease-in 2.6s forwards; }
   @keyframes lootIn { from{transform:translateX(-50%) translateY(40px) scale(0.5); opacity:0;} to{transform:translateX(-50%) translateY(0) scale(1); opacity:1;} }
   @keyframes lootOut { from{opacity:1;} to{transform:translateX(-50%) translateY(-20px); opacity:0;} }
   .collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 0.75rem; }
@@ -170,45 +195,74 @@
   .blob-card.locked { opacity: 0.4; }
   .blob-card.active { border-color: var(--accent); box-shadow: 0 4px 20px var(--accent-soft); }
   .blob-card svg { width: 60px; height: 60px; }
-  .blob-card-name { font-size: 12px; font-weight: 600; margin-top: 6px; }
-  .blob-card-req { font-size: 10px; color: var(--ink-3); margin-top: 2px; font-weight: 500; }
-  .footer-row { margin-top: 1.5rem; padding-top: 1rem; border-top: 0.5px solid var(--glass-border); display: flex; gap: 6px; flex-wrap: wrap; font-size: 11px; }
-  .link-btn { background: none; border: none; color: var(--ink-2); font-family: inherit; font-size: 11px; cursor: pointer; padding: 4px 10px; font-weight: 500; border-radius: 8px; }
+  .blob-card-name { font-size: 14px; font-weight: 600; margin-top: 6px; }
+  .blob-card-req { font-size: 14px; color: var(--ink-3); margin-top: 2px; font-weight: 500; }
+  .footer-row { margin-top: 1.5rem; padding-top: 1rem; border-top: 0.5px solid var(--glass-border); display: flex; gap: 6px; flex-wrap: wrap; font-size: 15px; }
+  .link-btn { background: none; border: none; color: var(--ink-2); font-family: inherit; font-size: 15px; cursor: pointer; padding: 4px 10px; font-weight: 500; border-radius: 8px; }
   .link-btn:hover { background: var(--accent-soft); color: var(--ink); }
   .map-area { padding: 1rem; }
   .map-svg { width: 100%; height: auto; display: block; max-width: 500px; margin: 0 auto; aspect-ratio: 1/1; }
   .map-region { cursor: pointer; transition: all 0.3s; }
-  .map-info { padding: 14px; background: var(--glass-bg-strong); border: 0.5px solid var(--glass-border); border-radius: 14px; margin-top: 0.75rem; text-align: center; font-size: 13px; }
-  .map-region-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
-  .map-region-desc { color: var(--ink-2); font-size: 12px; font-style: italic; }
+  .map-info { padding: 14px; background: var(--glass-bg-strong); border: 0.5px solid var(--glass-border); border-radius: 14px; margin-top: 0.75rem; text-align: center; font-size: 15px; }
+  .map-region-name { font-weight: 600; font-size: 18px; margin-bottom: 4px; }
+  .map-region-desc { color: var(--ink-2); font-size: 14px; font-style: italic; }
   .quest-card { background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 16px; padding: 14px 16px; margin-bottom: 8px; box-shadow: 0 4px 16px var(--glass-shadow); }
   .quest-card.complete { opacity: 0.6; }
   .quest-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
   .quest-emoji { font-size: 22px; }
   .quest-title { font-size: 15px; font-weight: 600; flex: 1; }
-  .quest-progress-text { font-size: 11px; color: var(--ink-2); margin-top: 6px; }
+  .quest-progress-text { font-size: 15px; color: var(--ink-2); margin-top: 6px; }
   .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 0.75rem; }
   .shop-item { background: var(--glass-bg); backdrop-filter: blur(10px); border: 0.5px solid var(--glass-border); border-radius: 14px; padding: 14px 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
   .shop-item:hover { transform: translateY(-2px); }
   .shop-item.owned { opacity: 0.7; }
   .shop-item.equipped { border-color: var(--accent); background: var(--accent-soft); }
   .shop-emoji { font-size: 32px; margin-bottom: 6px; }
-  .shop-name { font-size: 12px; font-weight: 600; }
-  .shop-cost { font-size: 11px; color: var(--gold); font-weight: 600; margin-top: 4px; }
-  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink-2); margin: 1rem 0 0.5rem; padding: 0 4px; }
+  .shop-name { font-size: 14px; font-weight: 600; }
+  .shop-cost { font-size: 15px; color: var(--gold); font-weight: 600; margin-top: 4px; }
+  .section-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink-2); margin: 1rem 0 0.5rem; padding: 0 4px; }
   .checkin { padding: 14px 16px; margin-bottom: 0.75rem; }
   .checkin-q { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
   .checkin-row { display: flex; gap: 6px; flex-wrap: wrap; }
   .mood-btn { padding: 8px 12px; border-radius: 12px; border: 0.5px solid var(--glass-border); background: rgba(255,255,255,0.4); cursor: pointer; font-size: 18px; font-family: inherit; transition: all 0.2s; }
   .mood-btn:hover { transform: scale(1.1); background: var(--accent-soft); }
-  .checkin-close { float: right; background: none; border: none; color: var(--ink-3); cursor: pointer; font-size: 16px; }
+  .checkin-close { float: right; background: none; border: none; color: var(--ink-3); cursor: pointer; font-size: 18px; }
   .stat-card { padding: 14px 16px; margin-bottom: 8px; }
-  .stat-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-size: 13px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-size: 15px; }
   .stat-num-big { font-size: 22px; font-weight: 600; color: var(--accent); }
-  .stat-label { font-size: 11px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+  .stat-label { font-size: 15px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
   .day-bar-row { display: flex; align-items: end; gap: 6px; height: 80px; padding: 0 4px; }
   .day-bar { flex: 1; background: linear-gradient(to top, var(--accent), var(--pink)); border-radius: 6px 6px 0 0; min-height: 4px; position: relative; }
-  .day-bar-label { font-size: 10px; color: var(--ink-3); text-align: center; margin-top: 4px; font-weight: 600; }
+  .day-bar-label { font-size: 14px; color: var(--ink-3); text-align: center; margin-top: 4px; font-weight: 600; }
+  .habit-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--glass-border); }
+  .habit-row:last-child { border-bottom: none; }
+  .habit-info { flex: 1; min-width: 0; }
+  .habit-title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .habit-meta { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+  .habit-grid { display: grid; grid-template-columns: repeat(28, 1fr); gap: 2px; width: 168px; flex-shrink: 0; }
+  .habit-cell { aspect-ratio: 1; border-radius: 2px; background: rgba(255,255,255,0.3); border: 0.5px solid var(--glass-border); }
+  .habit-cell.hit { background: var(--green); border-color: var(--green); }
+  .habit-cell.today { box-shadow: 0 0 0 1.5px var(--accent); }
+  .journal-entry { padding: 10px 0; border-bottom: 0.5px solid var(--glass-border); }
+  .journal-entry:last-child { border-bottom: none; }
+  .journal-date { font-size: 14px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .journal-line { font-size: 15px; line-height: 1.5; margin: 2px 0; }
+  .journal-line strong { display: inline-block; width: 14px; color: var(--green); font-weight: 700; }
+  .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .badge { background: rgba(255,255,255,0.3); border: 0.5px solid var(--glass-border); border-radius: 12px; padding: 10px 8px; text-align: center; transition: transform 0.15s; }
+  .badge:hover { transform: translateY(-2px); }
+  .badge-emoji { font-size: 28px; line-height: 1; }
+  .badge-name { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .badge-desc { font-size: 14px; color: var(--ink-2); margin-top: 2px; line-height: 1.3; }
+  .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 0.5rem 0; }
+  .tpl-card { background: rgba(255,255,255,0.4); border: 0.5px solid var(--glass-border); border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .tpl-card:hover { transform: translateY(-2px); background: var(--accent-soft); border-color: var(--accent); }
+  .tpl-emoji { font-size: 28px; line-height: 1; }
+  .tpl-name { font-size: 14px; font-weight: 700; margin-top: 6px; color: var(--ink); }
+  .tpl-meta { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+  .npc-progress { margin-top: 8px; }
+  .npc-meta { font-size: 14px; color: var(--ink-2); margin-top: 4px; font-weight: 500; }
+  @media (max-width: 540px) { .habit-grid { width: 112px; gap: 1px; } }
   .chest { display: inline-block; cursor: pointer; transition: transform 0.2s; animation: chestBob 2s ease-in-out infinite; }
   .chest:hover { transform: scale(1.15); }
   @keyframes chestBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
@@ -261,6 +315,7 @@
       <button class="btn btn-small btn-pink" id="roulette-btn">🎲 Pick one for me</button>
       <button class="btn btn-small btn-secondary" id="bodydouble-btn">👥 Body double</button>
       <button class="btn btn-small btn-secondary" id="twomin-btn">⏱ 2-min sprint</button>
+      <button class="btn btn-small btn-secondary" id="template-btn">📋 From template</button>
     </div>
     <div class="filters" id="filters">
       <button class="chip active" data-filter="all">All</button>
@@ -284,9 +339,10 @@
     <button class="link-btn" id="export-btn">Export JSON</button>
     <button class="link-btn" id="import-btn">Import JSON</button>
     <button class="link-btn" id="copy-btn">Copy as text</button>
+    <button class="link-btn" id="ical-btn">📅 Export calendar</button>
     <button class="link-btn" id="freeze-btn">🧊 Freeze streak</button>
-    <button class="link-btn" id="notif-btn">🔔 Enable reminders</button>
     <button class="link-btn" id="notif-btn">🔔 Notifications</button>
+    <button class="link-btn" id="mute-btn">🔊 Sound</button>
     <input type="file" id="import-file" accept=".json" style="display:none" />
   </div>
 </div>
@@ -298,11 +354,43 @@ let state={tasks:[],quests:[],view:'all',filter:'all'};
 let meta={streak:0,lastDoneDate:null,totalDone:0,currentBlob:'goober',unlocked:['goober'],coins:0,hp:100,lastCheckDate:null,ownedItems:[],equippedItems:[],currentRegion:'home',unlockedRegions:['home'],freezesUsedThisWeek:0,lastFreezeWeek:null,checkins:[],lastCheckinDate:null,doneByDate:{},chests:[],activeNpc:null,lastNpcDate:null,fusedBlobs:[]};
 let editingId=null,timerState=null,bodyDoubleInterval=null;
 const seedTasks=[
-{id:'t1',title:'Reply to that one email you keep avoiding',done:false,urgency:'today',context:'work',energy:'quick',deadline:null,notes:'',subtasks:[],created:Date.now(),questId:null,repeat:'none'},
+{id:'t1',title:'Reply to that email you keep avoiding',done:false,urgency:'today',context:'work',energy:'quick',deadline:null,notes:'',subtasks:[],created:Date.now(),questId:null,repeat:'none'},
 {id:'t2',title:'Read 10 pages of a book',done:false,urgency:'week',context:'personal',energy:'quick',deadline:null,notes:'try the bookshelf, not the phone',subtasks:[],created:Date.now()+1,questId:null,repeat:'daily'},
 {id:'t3',title:'Plan that weekend trip',done:false,urgency:'someday',context:'personal',energy:'deep',deadline:null,notes:'',subtasks:[{id:'s1',text:'pick a destination',done:false},{id:'s2',text:'check budget',done:false},{id:'s3',text:'find dates that work',done:false}],created:Date.now()+2,questId:null,repeat:'none'},
 {id:'t4',title:'Tidy your desk',done:false,urgency:'week',context:'personal',energy:'errand',deadline:null,notes:'',subtasks:[],created:Date.now()+3,questId:null,repeat:'weekly'}];
 const BLOBS={goober:{name:'Goober',unlock:0,color:'#FFB3C6',eyes:'normal',mouth:'smile',accessory:null},zorp:{name:'Zorp',unlock:5,color:'#A4C8FF',eyes:'wide',mouth:'o',accessory:'antennae'},smush:{name:'Smush',unlock:15,color:'#FFD6A5',eyes:'sleepy',mouth:'smirk',accessory:'sparkles'},blarp:{name:'Blarp',unlock:30,color:'#C9B6E4',eyes:'starry',mouth:'tongue',accessory:'horn'},glorm:{name:'Glorm',unlock:50,color:'#FF8FA8',eyes:'angry',mouth:'fang',accessory:'fire'},nebula:{name:'Nebula',unlock:75,color:'#7B8FD9',eyes:'cosmic',mouth:'wonder',accessory:'stars'},uwu:{name:'Uwu',unlock:100,color:'#FFE5B8',eyes:'uwu',mouth:'uwu',accessory:'bow'}};
+const DEFAULT_TEMPLATES=[
+  {id:'email',emoji:'📧',name:'Email reply',urgency:'today',context:'work',energy:'quick',steps:['open email','draft response','reread','send']},
+  {id:'bug',emoji:'🐛',name:'Bug fix',urgency:'week',context:'work',energy:'deep',steps:['reproduce the bug','identify root cause','write fix','test fix','open PR']},
+  {id:'meeting',emoji:'📅',name:'Meeting prep',urgency:'today',context:'work',energy:'quick',steps:['review agenda','jot 3 talking points','open relevant docs']},
+  {id:'errand',emoji:'🛒',name:'Errand run',urgency:'week',context:'personal',energy:'errand',steps:['make list','check fridge','go','put away']},
+  {id:'clean',emoji:'🧹',name:'Tidy a room',urgency:'week',context:'personal',energy:'errand',steps:['surfaces','floor','put things away','take out trash']},
+  {id:'study',emoji:'📚',name:'Study session',urgency:'today',context:'personal',energy:'deep',steps:['gather materials','phone away','25 min focus','review what stuck']},
+  {id:'workout',emoji:'💪',name:'Workout',urgency:'today',context:'personal',energy:'deep',steps:['change clothes','warm up','main set','cool down']},
+  {id:'call',emoji:'📞',name:'Make a call',urgency:'today',context:'personal',energy:'quick',steps:['jot what to say','dial','breathe','call']}
+];
+const ACHIEVEMENTS=[
+  {id:'first',emoji:'🌱',name:'First Sprout',desc:'completed your first task',check:m=>m.totalDone>=1},
+  {id:'ten',emoji:'🌿',name:'Getting Going',desc:'10 tasks done',check:m=>m.totalDone>=10},
+  {id:'fifty',emoji:'🌳',name:'Tree of Habit',desc:'50 tasks done',check:m=>m.totalDone>=50},
+  {id:'hundred',emoji:'🏔️',name:'Mountain Climber',desc:'100 tasks done',check:m=>m.totalDone>=100},
+  {id:'streak3',emoji:'🔥',name:'On Fire',desc:'3-day streak',check:m=>m.streak>=3},
+  {id:'streak7',emoji:'⚡',name:'Lightning',desc:'7-day streak',check:m=>m.streak>=7},
+  {id:'streak30',emoji:'💎',name:'Diamond Mind',desc:'30-day streak',check:m=>m.streak>=30},
+  {id:'collector',emoji:'🎨',name:'Collector',desc:'unlocked 3 blobs',check:m=>m.unlocked.length>=3},
+  {id:'explorer',emoji:'🧭',name:'Explorer',desc:'visited every region',check:m=>m.unlockedRegions.length>=6},
+  {id:'wealthy',emoji:'💰',name:'Wealthy',desc:'earned 500 coins',check:m=>m.coins>=500},
+  {id:'fashion',emoji:'👑',name:'Fashionista',desc:'bought 5 accessories',check:m=>m.ownedItems.length>=5},
+  {id:'scientist',emoji:'🧪',name:'Mad Scientist',desc:'discovered a fusion',check:m=>(m.fusedBlobs||[]).length>=1},
+  {id:'social',emoji:'👋',name:'Social Butterfly',desc:'helped 5 NPCs',check:m=>(m.npcsHelped||0)>=5},
+  {id:'night',emoji:'🦉',name:'Night Owl',desc:'task completed after 10pm',check:m=>m.completedLate},
+  {id:'morning',emoji:'🐓',name:'Early Bird',desc:'task completed before 7am',check:m=>m.completedEarly},
+  {id:'reflect',emoji:'📔',name:'Reflective',desc:'wrote 4 weekly reviews',check:m=>(m.journal||[]).length>=4},
+  {id:'consistent',emoji:'📅',name:'Consistent',desc:'7 daily check-ins',check:m=>(m.checkins||[]).length>=7},
+  {id:'mood_master',emoji:'🎭',name:'Mood Master',desc:'logged every mood',check:m=>{const s=new Set((m.checkins||[]).map(c=>c.mood));return s.size>=6;}},
+  {id:'quester',emoji:'⚔️',name:'Quest Master',desc:'completed a quest',check:m=>state.quests&&state.quests.some(q=>q.claimed)},
+  {id:'chest',emoji:'🗝️',name:'Chest Cracker',desc:'opened 5 chests',check:m=>(m.chestsOpened||0)>=5}
+];
 const REGIONS={home:{name:'Home Meadow',desc:'where it all begins. soft grass and gentle vibes.',unlock:0,x:50,y:75,color:'#B5E8C5'},forest:{name:'Whisper Forest',desc:'tall trees, quiet moss, somebody is humming.',unlock:5,x:22,y:55,color:'#7DC09B'},beach:{name:'Tangerine Beach',desc:'pink sand. waves that say nice things.',unlock:12,x:78,y:60,color:'#FFD6A5'},mountain:{name:'Cloud Peak',desc:'high up. the air is thinner. the views are unreal.',unlock:25,x:50,y:30,color:'#C9B6E4'},city:{name:'Neon Hollow',desc:'a tiny city of lights. probably has karaoke.',unlock:40,x:18,y:22,color:'#FF8FA8'},void:{name:'The Void',desc:'just vibes. cosmic. unsettling but cute.',unlock:75,x:80,y:18,color:'#7B8FD9'}};
 const SHOP_ITEMS={hat_top:{name:'Top Hat',emoji:'🎩',cost:30,type:'accessory'},hat_party:{name:'Party Hat',emoji:'🎉',cost:25,type:'accessory'},hat_crown:{name:'Crown',emoji:'👑',cost:80,type:'accessory'},glasses:{name:'Cool Shades',emoji:'🕶',cost:40,type:'accessory'},bowtie:{name:'Bowtie',emoji:'🎀',cost:20,type:'accessory'},flower:{name:'Flower',emoji:'🌸',cost:15,type:'accessory'},rainbow:{name:'Rainbow Aura',emoji:'🌈',cost:100,type:'accessory'}};
 const QUEST_EMOJIS=['🌟','🎯','⚔️','🏆','📜','🔮','🗝','💎','🎨','🚀','🎭','🌈','🦋','🍀','🎮'];
@@ -383,10 +471,15 @@ function load(){
   if(!meta.doneByDate)meta.doneByDate={};
   if(!meta.chests)meta.chests=[];
   if(!meta.fusedBlobs)meta.fusedBlobs=[];
+  if(!meta.habitLog)meta.habitLog={};
+  if(!meta.journal)meta.journal=[];
+  if(!meta.achievements)meta.achievements=[];
   rehydrateFusions();
   updateStreak();updateHP();maybeSpawnNpc();
   render();
+  setTimeout(()=>{const mb=document.getElementById('mute-btn');if(mb)mb.textContent=meta.muted?'🔇 Sound off':'🔊 Sound';},10);
   setTimeout(checkDeadlineNotifs,2000);
+  setTimeout(checkAchievements,500);
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({tasks:state.tasks,quests:state.quests}));}catch{}}
 function saveMeta(){try{localStorage.setItem(META_KEY,JSON.stringify(meta));}catch{}}
@@ -414,8 +507,12 @@ function recordDone(task){
   meta.hp=Math.min(100,meta.hp+5);
   if(!meta.doneByDate)meta.doneByDate={};
   meta.doneByDate[today]=(meta.doneByDate[today]||0)+1;
-  // Recurring task: spawn next instance
+  // Recurring task: spawn next instance + log habit completion
   if(task&&task.repeat&&task.repeat!=='none'){
+    if(!meta.habitLog)meta.habitLog={};
+    if(!meta.habitLog[task.title])meta.habitLog[task.title]={repeat:task.repeat,dates:[]};
+    if(!meta.habitLog[task.title].dates.includes(today))meta.habitLog[task.title].dates.push(today);
+    meta.habitLog[task.title].repeat=task.repeat;
     const days={daily:1,weekly:7,biweekly:14,monthly:30}[task.repeat]||0;
     if(days>0){
       const next=new Date(Date.now()+days*86400000).toISOString().slice(0,10);
@@ -435,10 +532,15 @@ function recordDone(task){
     const region=meta.unlockedRegions[Math.floor(Math.random()*meta.unlockedRegions.length)];
     if(!meta.chests)meta.chests=[];
     meta.chests.push({id:'c'+Date.now(),region,opened:false});
-    setTimeout(()=>toast(`💰 a chest appeared in ${REGIONS[region].name}!`),1500);
+    setTimeout(()=>{sfx('unlock');toast(`💰 a chest appeared in ${REGIONS[region].name}!`);},1500);
   }
-  Object.keys(BLOBS).forEach(id=>{if(BLOBS[id].unlock<=meta.totalDone&&!meta.unlocked.includes(id)){meta.unlocked.push(id);setTimeout(()=>toast(`✨ unlocked blob: ${BLOBS[id].name}`),1200);}});
-  Object.keys(REGIONS).forEach(id=>{if(REGIONS[id].unlock<=meta.totalDone&&!meta.unlockedRegions.includes(id)){meta.unlockedRegions.push(id);meta.currentRegion=id;setTimeout(()=>toast(`🌍 new region: ${REGIONS[id].name}!`),1800);}});
+  Object.keys(BLOBS).forEach(id=>{if(BLOBS[id].unlock<=meta.totalDone&&!meta.unlocked.includes(id)){meta.unlocked.push(id);setTimeout(()=>{sfx('unlock');toast(`✨ unlocked blob: ${BLOBS[id].name}`);},1200);}});
+  Object.keys(REGIONS).forEach(id=>{if(REGIONS[id].unlock<=meta.totalDone&&!meta.unlockedRegions.includes(id)){meta.unlockedRegions.push(id);meta.currentRegion=id;setTimeout(()=>{sfx('unlock');toast(`🌍 new region: ${REGIONS[id].name}!`);},1800);}});
+  // Track time-of-day for night owl / early bird achievements
+  const hr=new Date().getHours();
+  if(hr>=22||hr<3)meta.completedLate=true;
+  if(hr<7)meta.completedEarly=true;
+  checkAchievements();
   saveMeta();save();
   return lootMsg;
 }
@@ -466,54 +568,116 @@ const moods={'😊':'good','😐':'meh','😴':'tired','😤':'frustrated','🥳
 function renderCheckin(){
   const wrap=document.getElementById('checkin-mount');
   const today=new Date().toISOString().slice(0,10);
-  if(meta.lastCheckinDate===today||meta.checkinDismissedDate===today){wrap.innerHTML='';return;}
+  const isSunday=new Date().getDay()===0;
+  const weekKey=getWeekKey();
+  const weeklyDone=meta.lastWeeklyReview===weekKey;
+  const weeklyDismissed=meta.weeklyReviewDismissed===weekKey;
+  const dailyDone=meta.lastCheckinDate===today||meta.checkinDismissedDate===today;
+  // Weekly review takes priority on Sundays
+  if(isSunday&&!weeklyDone&&!weeklyDismissed){
+    wrap.innerHTML=`<div class="glass checkin">
+      <button class="checkin-close" data-action="dismiss-weekly">×</button>
+      <div class="checkin-q">🗓️ sunday review · how was your week?</div>
+      <p style="font-size: 14px;color:var(--ink-2);font-style:italic;margin:0 0 10px;">earns 10 🪙 · saves to your journal</p>
+      <div class="field"><label class="field-label">what went well</label><input type="text" id="weekly-good" placeholder="even one tiny thing counts"/></div>
+      <div class="field"><label class="field-label">what's bugging you</label><input type="text" id="weekly-bad" placeholder="vent here, it stays private"/></div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:10px;"><button class="btn btn-small btn-primary" id="weekly-save">save review</button></div>
+    </div>`;
+    const saveBtn=document.getElementById('weekly-save');
+    if(saveBtn)saveBtn.onclick=()=>{
+      const good=document.getElementById('weekly-good').value.trim();
+      const bad=document.getElementById('weekly-bad').value.trim();
+      if(!meta.journal)meta.journal=[];
+      meta.journal.push({week:weekKey,date:today,good,bad});
+      meta.lastWeeklyReview=weekKey;
+      meta.coins=(meta.coins||0)+10;
+      saveMeta();toast('weekly review saved · +10 🪙');renderCheckin();renderBlob();
+    };
+    return;
+  }
+  if(dailyDone){wrap.innerHTML='';return;}
   wrap.innerHTML=`<div class="glass checkin">
     <button class="checkin-close" data-action="dismiss-checkin">×</button>
     <div class="checkin-q">how are you today?</div>
     <div class="checkin-row">${Object.keys(moods).map(m=>`<button class="mood-btn" data-action="checkin" data-mood="${m}">${m}</button>`).join('')}</div>
   </div>`;
 }
+function getWeekKey(){
+  const d=new Date();
+  const sunday=new Date(d.setDate(d.getDate()-d.getDay()));
+  return sunday.toISOString().slice(0,10);
+}
 
 // ===== NPC VISITORS =====
 const NPCS=[
-  {id:'wanderer',emoji:'🧳',color:'#FFD6A5',name:'a wandering blob',msg:"hey friend! finish 3 tasks today and i'll teach you a secret."},
-  {id:'merchant',emoji:'💼',color:'#A4C8FF',name:'a tiny merchant',msg:"got coins? finish 5 tasks and i'll knock 50% off the next thing you buy."},
-  {id:'sage',emoji:'🔮',color:'#C9B6E4',name:'an old sage blob',msg:"complete a deep focus task and i'll bestow rare wisdom (and 25 coins)."},
-  {id:'partygoer',emoji:'🎉',color:'#FF8FA8',name:'a partygoing blob',msg:"finish a quick win to celebrate! i brought 15 coins."},
-  {id:'mystery',emoji:'❓',color:'#7B8FD9',name:'a mysterious figure',msg:"do anything. just one thing. they want to see you try."}
+  {id:'wanderer',emoji:'🧳',color:'#FFD6A5',name:'a wandering blob',days:1,goal:3,reward:20,msg:"hey friend! finish 3 tasks today and i'll teach you a secret.",endMsg:"the secret? you were doing it the whole time."},
+  {id:'merchant',emoji:'💼',color:'#A4C8FF',name:'a tiny merchant',days:1,goal:5,reward:30,msg:"got coins? finish 5 tasks and i'll throw in 30 extra.",endMsg:"a pleasure doing business."},
+  {id:'sage',emoji:'🔮',color:'#C9B6E4',name:'an old sage blob',days:1,goal:1,reward:25,msg:"complete one task and i'll bestow rare wisdom (and 25 coins).",endMsg:"wisdom: the next step is the only step that matters."},
+  {id:'partygoer',emoji:'🎉',color:'#FF8FA8',name:'a partygoing blob',days:1,goal:1,reward:15,msg:"finish a quick win to celebrate! i brought 15 coins.",endMsg:"woohoo! see you at the next one."},
+  {id:'mystery',emoji:'❓',color:'#7B8FD9',name:'a mysterious figure',days:1,goal:1,reward:10,msg:"do anything. just one thing. they want to see you try.",endMsg:"...they nod knowingly and vanish."},
+  {id:'lost_hat',emoji:'🎩',color:'#FF8FA8',name:'a frantic blob',days:3,goal:5,reward:60,msg:"i lost my favorite hat! help me search — 5 tasks over 3 days.",endMsg:"the hat! you found it (metaphorically). 60 coins, plus a bowtie i found.",bonusItem:'bowtie'},
+  {id:'detective',emoji:'🕵️',color:'#7B8FD9',name:'detective blob',days:3,goal:7,reward:80,msg:"a mystery's afoot. complete 7 tasks in 3 days to crack the case.",endMsg:"case closed! the answer was inside you the whole time. 80 coins."},
+  {id:'gardener',emoji:'🌱',color:'#B5E8C5',name:'gardener blob',days:5,goal:10,reward:100,msg:"my garden is in chaos. tend to it with me — 10 tasks over 5 days.",endMsg:"look at it bloom. you did this. 100 coins and a flower.",bonusItem:'flower'},
+  {id:'scholar',emoji:'📜',color:'#C9B6E4',name:'scholar blob',days:2,goal:3,reward:50,msg:"i need 3 tasks completed over 2 days for my research.",endMsg:"your contributions to science are noted. 50 coins."},
+  {id:'chef',emoji:'👨‍🍳',color:'#FFD6A5',name:'chef blob',days:2,goal:4,reward:45,msg:"i'm prepping a feast. 4 tasks in 2 days and i'll share the spoils.",endMsg:"dinner is served. here's 45 coins and my eternal gratitude."}
 ];
 function maybeSpawnNpc(){
   const today=new Date().toISOString().slice(0,10);
-  if(meta.lastNpcDate===today)return;
-  if(Math.random()<0.4){
-    meta.activeNpc={...NPCS[Math.floor(Math.random()*NPCS.length)],spawnedDate:today,startCount:meta.totalDone};
-    meta.lastNpcDate=today;
-    saveMeta();
-  }else{
-    meta.lastNpcDate=today;saveMeta();
+  // Expire NPCs whose window has passed
+  if(meta.activeNpc){
+    const spawnedT=new Date(meta.activeNpc.spawnedDate).getTime();
+    const daysSince=Math.floor((new Date(today).getTime()-spawnedT)/86400000);
+    const npcDef=NPCS.find(n=>n.id===meta.activeNpc.id);
+    const window_days=(npcDef&&npcDef.days)||1;
+    if(daysSince>=window_days){
+      setTimeout(()=>toast(`${meta.activeNpc.name} wandered off, looking sad`),800);
+      meta.activeNpc=null;saveMeta();
+    }
   }
+  if(meta.activeNpc)return;
+  if(meta.lastNpcDate===today)return;
+  const isFirstLoad=!meta.lastNpcDate;
+  if(isFirstLoad||Math.random()<0.7){
+    const pick=NPCS[Math.floor(Math.random()*NPCS.length)];
+    meta.activeNpc={...pick,spawnedDate:today,startCount:meta.totalDone};
+  }
+  meta.lastNpcDate=today;saveMeta();
 }
 function checkNpcReward(){
   if(!meta.activeNpc)return;
   const done=meta.totalDone-meta.activeNpc.startCount;
-  const{id}=meta.activeNpc;
-  let earned=0;
-  if(id==='wanderer'&&done>=3)earned=20;
-  else if(id==='merchant'&&done>=5)earned=30;
-  else if(id==='partygoer'&&done>=1)earned=15;
-  else if(id==='mystery'&&done>=1)earned=10;
-  if(earned){
-    meta.coins+=earned;
-    setTimeout(()=>{toast(`🎁 ${meta.activeNpc.name} left you ${earned} 🪙 and waved goodbye`);},1200);
+  const def=NPCS.find(n=>n.id===meta.activeNpc.id);
+  if(!def)return;
+  if(done>=def.goal){
+    meta.coins+=def.reward;
+    if(def.bonusItem&&!meta.ownedItems.includes(def.bonusItem)){
+      meta.ownedItems.push(def.bonusItem);
+      setTimeout(()=>toast(`got ${SHOP_ITEMS[def.bonusItem]?SHOP_ITEMS[def.bonusItem].emoji:'🎁'} ${SHOP_ITEMS[def.bonusItem]?SHOP_ITEMS[def.bonusItem].name:'a gift'}!`),2400);
+    }
+    setTimeout(()=>{toast(`🎁 +${def.reward} 🪙 — ${def.endMsg}`);sfx('coin');},1200);
+    meta.npcsHelped=(meta.npcsHelped||0)+1;
     meta.activeNpc=null;saveMeta();
+    checkAchievements();
   }
 }
 function renderNpc(){
   if(!meta.activeNpc)return '';
   const n=meta.activeNpc;
+  const def=NPCS.find(x=>x.id===n.id);
+  const isMulti=def&&def.days>1;
+  const progress=meta.totalDone-n.startCount;
+  const goal=def?def.goal:1;
+  const spawnedT=new Date(n.spawnedDate).getTime();
+  const todayT=new Date(new Date().toISOString().slice(0,10)).getTime();
+  const daysLeft=def?Math.max(0,def.days-Math.floor((todayT-spawnedT)/86400000)):1;
+  const progressPct=Math.min(100,(progress/goal)*100);
   return `<div class="glass npc-card">
     <div class="npc-blob"><svg viewBox="0 0 100 100"><path d="M 20 60 Q 15 35 35 25 Q 50 18 65 25 Q 85 35 80 60 Q 80 85 50 85 Q 20 85 20 60 Z" fill="${n.color}" stroke="#2D2640" stroke-width="2"/><circle cx="40" cy="48" r="3" fill="#2D2640"/><circle cx="60" cy="48" r="3" fill="#2D2640"/><path d="M 42 65 Q 50 70 58 65" stroke="#2D2640" stroke-width="2" fill="none" stroke-linecap="round"/><text x="50" y="14" font-size="20" text-anchor="middle">${n.emoji}</text></svg></div>
-    <div style="flex:1"><div style="font-weight:600;font-size:13px;">${n.name}</div><div style="font-size:12px;color:var(--ink-2);font-style:italic;margin-top:2px;">"${n.msg}"</div></div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:600;font-size: 15px;">${n.name}</div>
+      <div style="font-size: 14px;color:var(--ink-2);font-style:italic;margin-top:2px;">"${n.msg}"</div>
+      ${isMulti?`<div class="npc-progress"><div class="sub-progress"><div class="sub-progress-fill" style="width:${progressPct}%"></div></div><div class="npc-meta">${progress}/${goal} tasks · ${daysLeft} day${daysLeft===1?'':'s'} left · 🎁 ${def.reward} 🪙${def.bonusItem?` + ${SHOP_ITEMS[def.bonusItem]?SHOP_ITEMS[def.bonusItem].emoji:''}`:''}</div></div>`:''}
+    </div>
   </div>`;
 }
 
@@ -555,7 +719,7 @@ function renderStats(){
     <div class="glass stat-card">
       <div class="stat-label" style="margin-bottom:8px;">your most productive day</div>
       <div style="font-size:18px;font-weight:600;">${dowCounts[bestDow]>0?dowNames[bestDow]:'not enough data yet'}</div>
-      ${dowCounts[bestDow]>0?`<div style="font-size:11px;color:var(--ink-2);margin-top:2px;">${dowCounts[bestDow]} tasks completed on ${dowNames[bestDow]}s</div>`:''}
+      ${dowCounts[bestDow]>0?`<div style="font-size: 15px;color:var(--ink-2);margin-top:2px;">${dowCounts[bestDow]} tasks completed on ${dowNames[bestDow]}s</div>`:''}
     </div>
     <div class="glass stat-card">
       <div class="stat-label" style="margin-bottom:8px;">backlog</div>
@@ -572,7 +736,65 @@ function renderStats(){
       <div class="stat-label" style="margin-bottom:8px;">recent moods</div>
       <div style="font-size:24px;letter-spacing:8px;">${meta.checkins.slice(-14).map(c=>c.mood).join('')}</div>
     </div>`:''}
+    ${renderJournal()}
+    ${renderHabits()}
+    ${renderAchievements()}
   `;
+}
+function renderJournal(){
+  const j=(meta.journal||[]).slice(-4).reverse();
+  if(j.length===0)return '';
+  const items=j.map(e=>`<div class="journal-entry">
+    <div class="journal-date">week of ${e.week}</div>
+    ${e.good?`<div class="journal-line"><strong>+</strong> ${esc(e.good)}</div>`:''}
+    ${e.bad?`<div class="journal-line" style="color:var(--ink-2)"><strong>−</strong> ${esc(e.bad)}</div>`:''}
+  </div>`).join('');
+  return `<div class="glass stat-card">
+    <div class="stat-label" style="margin-bottom:10px;">📔 weekly journal</div>
+    ${items}
+  </div>`;
+}
+function renderHabits(){
+  const log=meta.habitLog||{};
+  const habits=Object.entries(log);
+  if(habits.length===0)return '';
+  const today=new Date();today.setHours(0,0,0,0);
+  // Build 28-day window
+  const days=[];
+  for(let i=27;i>=0;i--){
+    const d=new Date(today.getTime()-i*86400000);
+    days.push(d.toISOString().slice(0,10));
+  }
+  const cards=habits.map(([title,info])=>{
+    const dates=new Set(info.dates||[]);
+    const repeat=info.repeat||'daily';
+    // Compute current streak (for daily only)
+    let streak=0;
+    if(repeat==='daily'){
+      for(let i=0;i<60;i++){
+        const d=new Date(today.getTime()-i*86400000).toISOString().slice(0,10);
+        if(dates.has(d))streak++;
+        else if(i>0)break;
+      }
+    }
+    const cells=days.map(d=>{
+      const hit=dates.has(d);
+      const isToday=d===days[days.length-1];
+      return `<div class="habit-cell ${hit?'hit':''} ${isToday?'today':''}" title="${d}${hit?' · done':''}"></div>`;
+    }).join('');
+    const totalDone=(info.dates||[]).length;
+    return `<div class="habit-row">
+      <div class="habit-info">
+        <div class="habit-title">${esc(title)}</div>
+        <div class="habit-meta">🔁 ${repeat}${streak>1?` · 🔥 ${streak} day streak`:''} · ${totalDone} total</div>
+      </div>
+      <div class="habit-grid">${cells}</div>
+    </div>`;
+  }).join('');
+  return `<div class="glass stat-card">
+    <div class="stat-label" style="margin-bottom:10px;">📈 habits (last 28 days)</div>
+    ${cards}
+  </div>`;
 }
 
 // ===== CHESTS & FUSION (in shop) =====
@@ -602,7 +824,9 @@ function openChest(chest){
   }
   chest.opened=true;
   meta.chests=meta.chests.filter(c=>!c.opened);
-  saveMeta();celebrate();render();
+  meta.chestsOpened=(meta.chestsOpened||0)+1;
+  checkAchievements();
+  saveMeta();celebrate();sfx('chest');render();
 }
 
 const FUSIONS={
@@ -626,7 +850,7 @@ function tryFusion(){
   // Add to BLOBS dynamically and unlock
   BLOBS[fusionId]={name:recipe.name,unlock:0,color:recipe.color,eyes:recipe.eyes,mouth:recipe.mouth,accessory:recipe.accessory};
   meta.unlocked.push(fusionId);
-  saveMeta();celebrate();
+  saveMeta();celebrate();sfx('unlock');
   lootPopup(`✨ DISCOVERED: ${recipe.name}!`);
   fusionSlots=[null,null];render();
 }
@@ -707,7 +931,7 @@ function renderTask(t){
 function renderNow(){
   const wrap=document.getElementById('now-view-mount');
   const t=pickNowTask();
-  if(!t){wrap.innerHTML=`<div class="glass now-card"><div style="width:90px;height:90px;margin:0 auto 1rem;">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</div><div style="font-size:18px;font-weight:600;margin-bottom:8px;">nothing to do</div><div style="color:var(--ink-2);font-style:italic;font-size:13px;">go touch some grass.</div></div>`;return;}
+  if(!t){wrap.innerHTML=`<div class="glass now-card"><div style="width:90px;height:90px;margin:0 auto 1rem;">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</div><div style="font-size:18px;font-weight:600;margin-bottom:8px;">nothing to do</div><div style="color:var(--ink-2);font-style:italic;font-size: 15px;">go touch some grass.</div></div>`;return;}
   const dl=fmtDeadline(t.deadline);
   const sd=t.subtasks?t.subtasks.filter(s=>s.done).length:0;
   const stTotal=t.subtasks?t.subtasks.length:0;
@@ -730,9 +954,9 @@ function renderQuests(){
     const total=taskList.length,done=taskList.filter(t=>t.done).length;
     const pct=total>0?(done/total)*100:0;
     const complete=total>0&&done===total;
-    return `<div class="quest-card ${complete?'complete':''}"><div class="quest-header"><span class="quest-emoji">${q.emoji}</span><span class="quest-title">${esc(q.title)}</span><button class="icon-btn" data-action="del-quest" data-id="${q.id}">×</button></div>${q.desc?`<div style="font-size:12px;color:var(--ink-2);font-style:italic;margin-bottom:6px;">${esc(q.desc)}</div>`:''}<div class="sub-progress"><div class="sub-progress-fill" style="width:${pct}%"></div></div><div class="quest-progress-text">${done} of ${total} tasks ${complete?'· complete! 🎉':''}</div>${q.reward&&complete&&!q.claimed?`<button class="btn btn-small btn-pink" style="margin-top:8px;" data-action="claim-quest" data-id="${q.id}">claim ${q.reward} 🪙</button>`:''}</div>`;
+    return `<div class="quest-card ${complete?'complete':''}"><div class="quest-header"><span class="quest-emoji">${q.emoji}</span><span class="quest-title">${esc(q.title)}</span><button class="icon-btn" data-action="del-quest" data-id="${q.id}">×</button></div>${q.desc?`<div style="font-size: 14px;color:var(--ink-2);font-style:italic;margin-bottom:6px;">${esc(q.desc)}</div>`:''}<div class="sub-progress"><div class="sub-progress-fill" style="width:${pct}%"></div></div><div class="quest-progress-text">${done} of ${total} tasks ${complete?'· complete! 🎉':''}</div>${q.reward&&complete&&!q.claimed?`<button class="btn btn-small btn-pink" style="margin-top:8px;" data-action="claim-quest" data-id="${q.id}">claim ${q.reward} 🪙</button>`:''}</div>`;
   }).join('');
-  wrap.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;"><div style="font-size:13px;color:var(--ink-2);font-style:italic;">group related tasks. complete all → reward.</div><button class="btn btn-small btn-primary" id="new-quest-btn">+ new quest</button></div>${cards||'<div class="empty"><div class="empty-text">no quests yet. start one above.</div></div>'}`;
+  wrap.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;"><div style="font-size: 15px;color:var(--ink-2);font-style:italic;">group related tasks. complete all → reward.</div><button class="btn btn-small btn-primary" id="new-quest-btn">+ new quest</button></div>${cards||'<div class="empty"><div class="empty-text">no quests yet. start one above.</div></div>'}`;
   const nq=document.getElementById('new-quest-btn');if(nq)nq.onclick=()=>openQuestModal();
 }
 function renderMap(){
@@ -754,7 +978,7 @@ function renderMap(){
   const lines=[['home','forest'],['home','beach'],['forest','mountain'],['beach','mountain'],['mountain','city'],['mountain','void'],['city','void']].map(([a,b])=>{const ra=REGIONS[a],rb=REGIONS[b];return `<line x1="${ra.x}" y1="${ra.y}" x2="${rb.x}" y2="${rb.y}" stroke="#2D2640" stroke-width="0.3" stroke-dasharray="1,1" opacity="0.3"/>`;}).join('');
   const cur=REGIONS[meta.currentRegion];
   const chestCount=Object.keys(chestRegions).length;
-  wrap.innerHTML=`<div class="glass map-area"><svg class="map-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="100" height="100" fill="rgba(255,255,255,0.15)"/>${lines}${paths}<g transform="translate(${cur.x-5},${cur.y-12}) scale(0.1)">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</g></svg><div class="map-info"><div class="map-region-name">${current.name}</div><div class="map-region-desc">${current.desc}</div><div style="font-size:11px;color:var(--ink-3);margin-top:6px;">${meta.unlockedRegions.length}/${Object.keys(REGIONS).length} regions discovered${chestCount?` · 💰 ${chestCount} chest${chestCount>1?'s':''} waiting`:''}</div></div></div>`;
+  wrap.innerHTML=`<div class="glass map-area"><svg class="map-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="100" height="100" fill="rgba(255,255,255,0.15)"/>${lines}${paths}<g transform="translate(${cur.x-5},${cur.y-12}) scale(0.1)">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</g></svg><div class="map-info"><div class="map-region-name">${current.name}</div><div class="map-region-desc">${current.desc}</div><div style="font-size: 15px;color:var(--ink-3);margin-top:6px;">${meta.unlockedRegions.length}/${Object.keys(REGIONS).length} regions discovered${chestCount?` · 💰 ${chestCount} chest${chestCount>1?'s':''} waiting`:''}</div></div></div>`;
 }
 function renderShop(){
   const wrap=document.getElementById('shop-view-mount');
@@ -770,23 +994,23 @@ function renderShop(){
   // Fusion UI
   const slot1=fusionSlots[0],slot2=fusionSlots[1];
   const fusionUI=`<div class="glass fusion-area">
-    <div style="font-size:13px;color:var(--ink-2);font-style:italic;margin-bottom:8px;">combine 2 unlocked blobs to discover hybrids · 50 🪙</div>
+    <div style="font-size: 15px;color:var(--ink-2);font-style:italic;margin-bottom:8px;">combine 2 unlocked blobs to discover hybrids · 50 🪙</div>
     <div class="fusion-slots">
       <div class="fusion-slot ${slot1?'filled':''}" data-action="fusion-slot" data-slot="0">${slot1?svgBlob(slot1,'happy'):'<div style="font-size:32px;color:var(--ink-3);">?</div>'}</div>
       <div class="fusion-plus">+</div>
       <div class="fusion-slot ${slot2?'filled':''}" data-action="fusion-slot" data-slot="1">${slot2?svgBlob(slot2,'happy'):'<div style="font-size:32px;color:var(--ink-3);">?</div>'}</div>
     </div>
     <button class="btn btn-small btn-primary" data-action="fuse">✨ fuse them</button>
-    <div style="font-size:11px;color:var(--ink-3);margin-top:8px;">${meta.fusedBlobs.length}/${Object.keys(FUSIONS).length} hybrids discovered</div>
+    <div style="font-size: 15px;color:var(--ink-3);margin-top:8px;">${meta.fusedBlobs.length}/${Object.keys(FUSIONS).length} hybrids discovered</div>
   </div>`;
   // Chests UI
   const chests=(meta.chests||[]).filter(c=>!c.opened);
   const chestUI=chests.length>0?`<div class="glass" style="padding:14px;text-align:center;margin-bottom:0.75rem;">
     <div class="stat-label" style="margin-bottom:8px;">treasure chests</div>
     ${chests.map(c=>`<span class="chest" data-action="open-chest" data-chest="${c.id}" style="font-size:36px;margin:0 6px;">💰</span>`).join('')}
-    <div style="font-size:11px;color:var(--ink-2);margin-top:6px;">tap to open · spawned in ${chests.map(c=>REGIONS[c.region].name).join(', ')}</div>
+    <div style="font-size: 15px;color:var(--ink-2);margin-top:6px;">tap to open · spawned in ${chests.map(c=>REGIONS[c.region].name).join(', ')}</div>
   </div>`:'';
-  wrap.innerHTML=`<div style="text-align:center;margin-bottom:0.75rem;font-size:13px;color:var(--ink-2);">🪙 <strong style="color:var(--ink);">${meta.coins||0}</strong> coins · earn more by completing tasks</div>${chestUI}<div class="section-title">Your blobs</div><div class="collection-grid">${blobCards}</div><div class="section-title">Blob fusion lab</div>${fusionUI}<div class="section-title">Accessories</div><div class="shop-grid">${shopCards}</div>`;
+  wrap.innerHTML=`<div style="text-align:center;margin-bottom:0.75rem;font-size: 15px;color:var(--ink-2);">🪙 <strong style="color:var(--ink);">${meta.coins||0}</strong> coins · earn more by completing tasks</div>${chestUI}<div class="section-title">Your blobs</div><div class="collection-grid">${blobCards}</div><div class="section-title">Blob fusion lab</div>${fusionUI}<div class="section-title">Accessories</div><div class="shop-grid">${shopCards}</div>`;
 }
 function render(){
   rehydrateFusions();
@@ -837,7 +1061,7 @@ function closeModal(){document.getElementById('modal-mount').innerHTML='';editin
 function openQuestModal(){
   document.getElementById('modal-mount').innerHTML=`<div class="modal-bg" id="modal-bg"><div class="modal" id="modal">
     <h3>New quest</h3>
-    <p style="font-size:13px;color:var(--ink-2);font-style:italic;margin:0 0 1rem;">A quest groups related tasks. Finish all to claim a reward.</p>
+    <p style="font-size: 15px;color:var(--ink-2);font-style:italic;margin:0 0 1rem;">A quest groups related tasks. Finish all to claim a reward.</p>
     <div class="field"><label class="field-label">Quest name</label><input type="text" id="q-title" placeholder="e.g. Launch the website"/></div>
     <div class="field"><label class="field-label">Description (optional)</label><input type="text" id="q-desc" placeholder="what's this about"/></div>
     <div class="field"><label class="field-label">Pick an emoji</label><div class="pill-group" id="q-emoji-grid">${QUEST_EMOJIS.map((e,i)=>`<button class="pill ${i===0?'active':''}" data-emoji="${e}">${e}</button>`).join('')}</div></div>
@@ -852,12 +1076,134 @@ function openQuestModal(){
     save();closeModal();render();toast('quest started ⚔️');
   };
 }
+// ===== SOUND EFFECTS =====
+let audioCtx=null;
+function getAudio(){if(meta.muted)return null;if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch{return null;}}return audioCtx;}
+function playTone(freq,dur=0.15,type='sine',gain=0.12){
+  const ctx=getAudio();if(!ctx)return;
+  try{
+    const osc=ctx.createOscillator(),g=ctx.createGain();
+    osc.type=type;osc.frequency.value=freq;
+    g.gain.setValueAtTime(0,ctx.currentTime);
+    g.gain.linearRampToValueAtTime(gain,ctx.currentTime+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+dur);
+    osc.connect(g);g.connect(ctx.destination);
+    osc.start();osc.stop(ctx.currentTime+dur);
+  }catch{}
+}
+function sfx(name){
+  if(meta.muted)return;
+  switch(name){
+    case 'complete':playTone(523,0.1);setTimeout(()=>playTone(784,0.18),80);break;
+    case 'sub':playTone(659,0.08);break;
+    case 'coin':playTone(880,0.06,'triangle',0.1);setTimeout(()=>playTone(1175,0.1,'triangle',0.08),50);break;
+    case 'unlock':playTone(523,0.1,'triangle');setTimeout(()=>playTone(659,0.1,'triangle'),100);setTimeout(()=>playTone(784,0.2,'triangle'),200);break;
+    case 'chest':playTone(440,0.08);setTimeout(()=>playTone(659,0.08),60);setTimeout(()=>playTone(880,0.15),120);setTimeout(()=>playTone(1175,0.25),200);break;
+    case 'tick':playTone(1000,0.04,'square',0.05);break;
+    case 'chime':playTone(800,0.12,'sine',0.08);setTimeout(()=>playTone(1067,0.18,'sine',0.08),100);break;
+  }
+}
+
+// ===== ACHIEVEMENTS =====
+function checkAchievements(){
+  if(!meta.achievements)meta.achievements=[];
+  ACHIEVEMENTS.forEach(a=>{
+    if(!meta.achievements.includes(a.id)&&a.check(meta)){
+      meta.achievements.push(a.id);
+      setTimeout(()=>{toast(`🏅 achievement: ${a.name}!`);sfx('unlock');},1400);
+    }
+  });
+  saveMeta();
+}
+function renderAchievements(){
+  if(!meta.achievements||meta.achievements.length===0)return '';
+  const unlocked=ACHIEVEMENTS.filter(a=>meta.achievements.includes(a.id));
+  const locked=ACHIEVEMENTS.filter(a=>!meta.achievements.includes(a.id));
+  const items=unlocked.map(a=>`<div class="badge"><div class="badge-emoji">${a.emoji}</div><div class="badge-name">${a.name}</div><div class="badge-desc">${a.desc}</div></div>`).join('');
+  const lockedHint=locked.length>0?`<div style="text-align:center;font-size: 15px;color:var(--ink-3);margin-top:8px;font-style:italic;">${locked.length} more to discover</div>`:'';
+  return `<div class="glass stat-card">
+    <div class="stat-label" style="margin-bottom:10px;">🏅 achievements (${unlocked.length}/${ACHIEVEMENTS.length})</div>
+    <div class="badge-grid">${items}</div>
+    ${lockedHint}
+  </div>`;
+}
+
+// ===== TASK TEMPLATES =====
+function openTemplatePicker(){
+  const tpls=meta.taskTemplates&&meta.taskTemplates.length?meta.taskTemplates:DEFAULT_TEMPLATES;
+  const cards=tpls.map(t=>`<button class="tpl-card" data-tpl="${t.id}">
+    <div class="tpl-emoji">${t.emoji}</div>
+    <div class="tpl-name">${esc(t.name)}</div>
+    <div class="tpl-meta">${t.steps.length} steps · ${t.energy}</div>
+  </button>`).join('');
+  document.getElementById('modal-mount').innerHTML=`<div class="modal-bg" id="modal-bg"><div class="modal" id="modal">
+    <h3>📋 from template</h3>
+    <p style="font-size: 15px;color:var(--ink-2);font-style:italic;margin:0 0 1rem;">pick a starting point — task & subtasks pre-filled. you can edit after.</p>
+    <div class="tpl-grid">${cards}</div>
+    <div class="modal-actions"><button class="btn btn-secondary" id="m-cancel">Cancel</button></div>
+  </div></div>`;
+  document.querySelectorAll('.tpl-card').forEach(c=>{
+    c.onclick=()=>{
+      const t=tpls.find(x=>x.id===c.dataset.tpl);if(!t)return;
+      state.tasks.push({
+        id:uid(),title:`${t.emoji} ${t.name}`,done:false,
+        urgency:t.urgency,context:t.context,energy:t.energy,
+        deadline:null,notes:'',
+        subtasks:t.steps.map(s=>({id:'s'+Date.now()+Math.random().toString(36).slice(2,4),text:s,done:false})),
+        created:Date.now(),questId:null,repeat:'none'
+      });
+      save();closeModal();render();sfx('coin');
+      toast(`added "${t.name}" with ${t.steps.length} steps`);
+    };
+  });
+}
+
+// ===== CALENDAR EXPORT =====
+function exportICS(){
+  const withDeadline=state.tasks.filter(t=>!t.done&&t.deadline);
+  if(withDeadline.length===0){toast('no tasks with deadlines to export');return;}
+  const pad=n=>String(n).padStart(2,'0');
+  const dt=d=>d.replace(/-/g,'');
+  const now=new Date();
+  const stamp=`${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+  const escIcs=s=>String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+  const events=withDeadline.map(t=>{
+    const tags=[t.urgency,t.context,t.energy].filter(Boolean).join('/');
+    return `BEGIN:VEVENT\nUID:bloblist-${t.id}@bloblist\nDTSTAMP:${stamp}\nDTSTART;VALUE=DATE:${dt(t.deadline)}\nDTEND;VALUE=DATE:${dt(t.deadline)}\nSUMMARY:${escIcs(t.title)}\nDESCRIPTION:${escIcs(t.notes||'')}${t.notes?'\\n\\n':''}tags: ${escIcs(tags)}${t.subtasks&&t.subtasks.length?'\\n\\nsteps:\\n'+t.subtasks.map(s=>'- '+escIcs(s.text)).join('\\n'):''}\nEND:VEVENT`;
+  }).join('\n');
+  const ics=`BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Bloblist//EN\nCALSCALE:GREGORIAN\n${events}\nEND:VCALENDAR`;
+  const blob=new Blob([ics],{type:'text/calendar'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`bloblist-${new Date().toISOString().slice(0,10)}.ics`;a.click();
+  URL.revokeObjectURL(url);
+  toast(`exported ${withDeadline.length} task${withDeadline.length>1?'s':''} to calendar`);
+}
+
+function openAddSubModal(task){
+  document.getElementById('modal-mount').innerHTML=`<div class="modal-bg" id="modal-bg"><div class="modal" id="modal">
+    <h3>+ tiny step</h3>
+    <p style="font-size: 15px;color:var(--ink-2);font-style:italic;margin:0 0 1rem;">Add a small step to "${esc(task.title)}". Should take 2-15 min.</p>
+    <div class="field"><label class="field-label">Step</label><input type="text" id="addsub-input" placeholder="e.g. open the file"/></div>
+    <div class="modal-actions"><button class="btn btn-secondary" id="m-cancel">Cancel</button><button class="btn btn-primary" id="addsub-save">Add</button></div>
+  </div></div>`;
+  setTimeout(()=>document.getElementById('addsub-input').focus(),50);
+  const saveBtn=document.getElementById('addsub-save');
+  const inp=document.getElementById('addsub-input');
+  const doAdd=()=>{
+    const text=inp.value.trim();if(!text){closeModal();return;}
+    if(!task.subtasks)task.subtasks=[];
+    task.subtasks.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,4),text,done:false});
+    save();closeModal();render();toast('step added');
+  };
+  saveBtn.onclick=doAdd;
+  inp.onkeydown=(e)=>{if(e.key==='Enter')doAdd();};
+}
 function openBreakdown(task){
   document.getElementById('modal-mount').innerHTML=`<div class="modal-bg" id="modal-bg"><div class="modal" id="modal">
     <h3>✨ Break it down</h3>
-    <p style="font-size:13px;color:var(--ink-2);font-style:italic;margin:0 0 1rem;">"${esc(task.title)}" too big? Add tiny steps — each 2-15 min.</p>
+    <p style="font-size: 15px;color:var(--ink-2);font-style:italic;margin:0 0 1rem;">"${esc(task.title)}" too big? Add tiny steps — each 2-15 min.</p>
     <div class="field"><label class="field-label">Steps (one per line)</label><textarea id="bd-steps" rows="6" placeholder="open the file&#10;read the requirements&#10;sketch on paper for 5 min"></textarea></div>
-    <div style="background:var(--accent-soft);padding:10px;border-radius:10px;font-size:11px;color:var(--ink-2);margin-bottom:10px;"><strong style="color:var(--ink);">Stuck?</strong> "Ask Claude" copies a prompt to clipboard.</div>
+    <div style="background:var(--accent-soft);padding:10px;border-radius:10px;font-size: 15px;color:var(--ink-2);margin-bottom:10px;"><strong style="color:var(--ink);">Stuck?</strong> "Ask Claude" copies a prompt to clipboard.</div>
     <div class="modal-actions"><button class="btn btn-secondary" id="bd-claude">Ask Claude</button><button class="btn btn-secondary" id="m-cancel">Cancel</button><button class="btn btn-primary" id="bd-save">Add steps</button></div>
   </div></div>`;
   document.getElementById('bd-claude').onclick=()=>{const prompt=`Break this task into 5-10 tiny concrete steps. Each 2-15 minutes, starts with a verb.\n\nTask: ${task.title}${task.notes?'\nContext: '+task.notes:''}\n\nFormat: numbered list, no preamble.`;navigator.clipboard.writeText(prompt).then(()=>toast('copied'));};
@@ -869,27 +1215,103 @@ function openBreakdown(task){
     save();closeModal();render();toast(`+${lines.length} steps`);
   };
 }
+// Goober activities — what Goober is "doing" during your session
+const gooberActivities=[
+  {emoji:'💻',action:'typing furiously',anim:'typing'},
+  {emoji:'📝',action:'taking notes',anim:'writing'},
+  {emoji:'🤔',action:'thinking hard',anim:'thinking'},
+  {emoji:'☕',action:'sipping coffee',anim:'sipping'},
+  {emoji:'📚',action:'reading carefully',anim:'reading'},
+  {emoji:'🎧',action:'lo-fi vibes',anim:'listening'},
+  {emoji:'✏️',action:'sketching ideas',anim:'sketching'},
+  {emoji:'🔍',action:'researching',anim:'searching'}
+];
+const midSessionMsgs=[
+  ['🌱 5 min in!','staying with it?','still going','need help?'],
+  ['☀️ halfway there!','feel good?','still going','need a break'],
+  ['🌙 5 min left','final stretch','keep going','almost there!']
+];
+let gooberActivityTimer=null;
+let currentActivityIdx=0;
+
 function startTimer(task,minutes=25,isBodyDouble=false){
-  timerState={task,total:minutes*60,remaining:minutes*60,paused:false,interval:null,isBodyDouble};
+  timerState={task,total:minutes*60,remaining:minutes*60,paused:false,interval:null,isBodyDouble,checkpointsHit:[],startTime:Date.now()};
+  currentActivityIdx=Math.floor(Math.random()*gooberActivities.length);
   if(isBodyDouble){
     bodyDoubleInterval=setInterval(()=>{const el=document.getElementById('body-double-msg');if(el){el.style.opacity='0';setTimeout(()=>{el.textContent=bodyDoubleMessages[Math.floor(Math.random()*bodyDoubleMessages.length)];el.style.opacity='1';},400);}},8000);
   }
+  // Rotate Goober's activity every 12 seconds
+  gooberActivityTimer=setInterval(()=>{
+    currentActivityIdx=(currentActivityIdx+1)%gooberActivities.length;
+    const el=document.getElementById('goober-activity');
+    if(el){
+      el.style.opacity='0';
+      setTimeout(()=>{
+        const act=gooberActivities[currentActivityIdx];
+        el.innerHTML=`<span class="goober-emoji">${act.emoji}</span> ${act.action}`;
+        el.style.opacity='1';
+      },300);
+    }
+  },12000);
   renderTimer();
   timerState.interval=setInterval(()=>{
     if(!timerState.paused){
       timerState.remaining--;
+      // Mid-session check-ins at ~20%, 50%, 80% progress (only for longer timers)
+      if(minutes>=10){
+        const elapsedPct=((timerState.total-timerState.remaining)/timerState.total)*100;
+        [{pct:20,idx:0},{pct:50,idx:1},{pct:80,idx:2}].forEach(({pct,idx})=>{
+          if(elapsedPct>=pct&&!timerState.checkpointsHit.includes(idx)){
+            timerState.checkpointsHit.push(idx);
+            showCheckpoint(idx);
+          }
+        });
+      }
       if(timerState.remaining<=0){
         clearInterval(timerState.interval);
         if(bodyDoubleInterval){clearInterval(bodyDoubleInterval);bodyDoubleInterval=null;}
-        timerState.remaining=0;renderTimer();celebrate();
+        if(gooberActivityTimer){clearInterval(gooberActivityTimer);gooberActivityTimer=null;}
+        timerState.remaining=0;renderTimer();celebrate();sfx('chime');
         const reward=isBodyDouble?3:(minutes>=25?5:2);
         meta.coins=(meta.coins||0)+reward;saveMeta();
-        toast(`time! +${reward} 🪙. take a break.`);return;
+        toast(`time! +${reward} 🪙. goober worked alongside you the whole time.`);return;
       }
-      renderTimer();
+      if(timerState.remaining<=10&&timerState.remaining>0)sfx('tick');
+      updateTimerUI();
     }
   },1000);
 }
+
+function showCheckpoint(idx){
+  const msgs=midSessionMsgs[idx];
+  const mount=document.getElementById('checkpoint-mount');
+  if(!mount)return;
+  mount.innerHTML=`<div class="checkpoint">
+    <div class="checkpoint-emoji">${msgs[0].split(' ')[0]}</div>
+    <div class="checkpoint-msg">${msgs[0].split(' ').slice(1).join(' ')}</div>
+    <div class="checkpoint-sub">${msgs[1]}</div>
+    <div class="checkpoint-actions">
+      <button class="btn btn-small btn-success" id="cp-going">${msgs[2]}</button>
+      <button class="btn btn-small btn-secondary" id="cp-stuck">${msgs[3]}</button>
+    </div>
+  </div>`;
+  document.getElementById('cp-going').onclick=()=>{
+    mount.innerHTML='';
+    toast(['nice. carry on.','you got this.','staying with it. proud.'][Math.floor(Math.random()*3)]);
+  };
+  document.getElementById('cp-stuck').onclick=()=>{
+    mount.innerHTML='';
+    if(timerState&&timerState.task&&timerState.task.title){
+      stopTimer();
+      openBreakdown(timerState.task);
+    }else{
+      toast('take 2 min, then come back.');
+    }
+  };
+  // Auto-dismiss after 12 seconds if no action
+  setTimeout(()=>{if(mount.innerHTML.includes('checkpoint'))mount.innerHTML='';},12000);
+}
+
 function renderTimer(){
   if(!timerState){document.getElementById('timer-mount').innerHTML='';return;}
   const{task,total,remaining,paused,isBodyDouble}=timerState;
@@ -897,20 +1319,27 @@ function renderTimer(){
   const display=`${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
   const pct=((total-remaining)/total)*100;
   const r=120,c=2*Math.PI*r,offset=c-(pct/100)*c;
-  // If timer DOM doesn't exist yet, build it once
   if(!document.getElementById('timer-display-num')){
-    document.getElementById('timer-mount').innerHTML=`<div class="timer-overlay"><div class="glass timer-card">
-      <div class="timer-blob">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</div>
-      <div class="timer-status" id="timer-status-text">${paused?'paused':remaining===0?'done':isBodyDouble?'working together':'focusing'}</div>
-      ${isBodyDouble?`<div class="body-double-msg" id="body-double-msg">${bodyDoubleMessages[0]}</div>`:`<div class="timer-task">${task?esc(task.title):'focus session'}</div>`}
-      <div class="timer-ring"><svg width="260" height="260"><circle cx="130" cy="130" r="${r}" stroke="rgba(255,255,255,0.4)" stroke-width="6" fill="none"/><circle id="timer-progress-ring" cx="130" cy="130" r="${r}" stroke="url(#tg)" stroke-width="6" fill="none" stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 1s linear"/><defs><linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6B5BD6"/><stop offset="100%" stop-color="#FF6B9D"/></linearGradient></defs></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><div class="timer-display" id="timer-display-num">${display}</div></div></div>
-      <div style="display:flex;gap:10px;" id="timer-buttons">${remaining>0?`<button class="btn btn-secondary" id="t-pause">${paused?'resume':'pause'}</button>`:''}<button class="btn btn-primary" id="t-stop">${remaining===0?'nice':'stop'}</button></div>
-    </div></div>`;
+    const act=gooberActivities[currentActivityIdx];
+    document.getElementById('timer-mount').innerHTML=`<div class="timer-overlay">
+      <div id="checkpoint-mount"></div>
+      <div class="glass timer-card">
+        <div class="timer-blob working-blob">${svgBlob(meta.currentBlob,'happy',getEquippedExtras())}</div>
+        <div class="timer-status" id="timer-status-text">${paused?'paused':remaining===0?'done':isBodyDouble?'working together':'focusing'}</div>
+        ${isBodyDouble?`<div class="body-double-msg" id="body-double-msg">${bodyDoubleMessages[0]}</div>`:`<div class="timer-task">${task?esc(task.title):'focus session'}</div>`}
+        <div class="goober-activity" id="goober-activity"><span class="goober-emoji">${act.emoji}</span> ${act.action}</div>
+        <div class="timer-ring"><svg width="260" height="260"><circle cx="130" cy="130" r="${r}" stroke="rgba(255,255,255,0.4)" stroke-width="6" fill="none"/><circle id="timer-progress-ring" cx="130" cy="130" r="${r}" stroke="url(#tg)" stroke-width="6" fill="none" stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 1s linear"/><defs><linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6B5797"/><stop offset="100%" stop-color="#C97090"/></linearGradient></defs></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><div class="timer-display" id="timer-display-num">${display}</div></div></div>
+        <div class="parallel-progress">
+          <div class="parallel-row"><span class="parallel-label">you</span><div class="parallel-bar"><div class="parallel-fill you" id="parallel-you" style="width:${pct}%;"></div></div></div>
+          <div class="parallel-row"><span class="parallel-label">goober</span><div class="parallel-bar"><div class="parallel-fill goober" id="parallel-goober" style="width:${Math.min(100,pct+(Math.random()*8-4))}%;"></div></div></div>
+        </div>
+        <div style="display:flex;gap:10px;" id="timer-buttons">${remaining>0?`<button class="btn btn-secondary" id="t-pause">${paused?'resume':'pause'}</button>`:''}<button class="btn btn-primary" id="t-stop">${remaining===0?'nice':'stop'}</button></div>
+      </div>
+    </div>`;
     const pause=document.getElementById('t-pause');if(pause)pause.onclick=()=>{timerState.paused=!timerState.paused;updateTimerUI();};
     document.getElementById('t-stop').onclick=stopTimer;
     return;
   }
-  // Otherwise just update the changing parts
   updateTimerUI();
 }
 function updateTimerUI(){
@@ -924,7 +1353,12 @@ function updateTimerUI(){
   const numEl=document.getElementById('timer-display-num');if(numEl)numEl.textContent=display;
   const ringEl=document.getElementById('timer-progress-ring');if(ringEl)ringEl.setAttribute('stroke-dashoffset',offset);
   const statusEl=document.getElementById('timer-status-text');if(statusEl)statusEl.textContent=paused?'paused':remaining===0?'done':isBodyDouble?'working together':'focusing';
-  // Only rebuild buttons if state changed
+  const youBar=document.getElementById('parallel-you');if(youBar)youBar.style.width=pct+'%';
+  const goobBar=document.getElementById('parallel-goober');if(goobBar){
+    // Goober keeps roughly in sync with small variations to feel alive
+    const goobPct=Math.max(0,Math.min(100,pct+Math.sin(Date.now()/3000)*3));
+    goobBar.style.width=goobPct+'%';
+  }
   const btns=document.getElementById('timer-buttons');
   if(btns){
     const pauseBtn=document.getElementById('t-pause');
@@ -934,7 +1368,7 @@ function updateTimerUI(){
     if(stopBtn&&remaining===0)stopBtn.textContent='nice';
   }
 }
-function stopTimer(){if(timerState&&timerState.interval)clearInterval(timerState.interval);if(bodyDoubleInterval){clearInterval(bodyDoubleInterval);bodyDoubleInterval=null;}timerState=null;renderTimer();}
+function stopTimer(){if(timerState&&timerState.interval)clearInterval(timerState.interval);if(bodyDoubleInterval){clearInterval(bodyDoubleInterval);bodyDoubleInterval=null;}if(gooberActivityTimer){clearInterval(gooberActivityTimer);gooberActivityTimer=null;}timerState=null;renderTimer();}
 function rouletteTask(){
   const active=state.tasks.filter(t=>!t.done);
   if(active.length===0){toast('no tasks to pick from');return;}
@@ -973,6 +1407,7 @@ document.addEventListener('click',(e)=>{
       toast(`logged ${mood} · +2 🪙`);renderCheckin();renderBlob();return;
     }
     if(a==='dismiss-checkin'){meta.checkinDismissedDate=new Date().toISOString().slice(0,10);saveMeta();renderCheckin();return;}
+    if(a==='dismiss-weekly'){meta.weeklyReviewDismissed=getWeekKey();saveMeta();renderCheckin();return;}
     if(a==='open-chest'){
       const chest=(meta.chests||[]).find(c=>c.id===action.dataset.chest);
       if(chest&&!chest.opened)openChest(chest);
@@ -1029,12 +1464,12 @@ document.addEventListener('click',(e)=>{
     if(a==='buy'){const id=action.dataset.item,item=SHOP_ITEMS[id];if(meta.coins>=item.cost){meta.coins-=item.cost;meta.ownedItems.push(id);if(item.type==='accessory')meta.equippedItems.push(id);saveMeta();render();toast(`got ${item.name}!`);}else toast(`need ${item.cost-meta.coins} more coins`);return;}
     if(a==='toggle-equip'){const id=action.dataset.item;if(meta.equippedItems.includes(id))meta.equippedItems=meta.equippedItems.filter(x=>x!==id);else meta.equippedItems.push(id);saveMeta();render();return;}
     if(a==='del-quest'){const id=action.dataset.id;if(confirm('delete this quest?')){state.quests=state.quests.filter(q=>q.id!==id);state.tasks.forEach(t=>{if(t.questId===id)t.questId=null;});save();render();}return;}
-    if(a==='claim-quest'){const id=action.dataset.id;const q=state.quests.find(x=>x.id===id);if(q&&!q.claimed){q.claimed=true;meta.coins+=q.reward;saveMeta();save();celebrate();lootPopup(`🏆 quest complete! +${q.reward} 🪙`);render();}return;}
+    if(a==='claim-quest'){const id=action.dataset.id;const q=state.quests.find(x=>x.id===id);if(q&&!q.claimed){q.claimed=true;meta.coins+=q.reward;saveMeta();save();celebrate();sfx('chest');lootPopup(`🏆 quest complete! +${q.reward} 🪙`);render();}return;}
     const id=action.dataset.id,task=state.tasks.find(t=>t.id===id);
-    if(a==='toggle'){const wasDone=task.done;task.done=!task.done;if(!wasDone&&task.done){const lootMsg=recordDone(task);celebrate();lootPopup(lootMsg);checkNpcReward();const el=document.querySelector(`[data-task="${id}"]`);if(el)el.classList.add('completing');}save();setTimeout(render,250);}
-    else if(a==='toggle-sub'){const s=task.subtasks.find(x=>x.id===action.dataset.sub);const wasDone=s.done;s.done=!s.done;if(!wasDone&&s.done){toast('one closer ✓');if(task.subtasks.every(x=>x.done)&&!task.done){task.done=true;const lootMsg=recordDone(task);celebrate();lootPopup(lootMsg);checkNpcReward();}}save();render();}
+    if(a==='toggle'){const wasDone=task.done;task.done=!task.done;if(!wasDone&&task.done){const lootMsg=recordDone(task);celebrate();sfx('complete');lootPopup(lootMsg);checkNpcReward();const el=document.querySelector(`[data-task="${id}"]`);if(el)el.classList.add('completing');}save();setTimeout(render,250);}
+    else if(a==='toggle-sub'){const s=task.subtasks.find(x=>x.id===action.dataset.sub);const wasDone=s.done;s.done=!s.done;if(!wasDone&&s.done){sfx('sub');toast('one closer ✓');if(task.subtasks.every(x=>x.done)&&!task.done){task.done=true;const lootMsg=recordDone(task);celebrate();sfx('complete');lootPopup(lootMsg);checkNpcReward();}}save();render();}
     else if(a==='del-sub'){task.subtasks=task.subtasks.filter(x=>x.id!==action.dataset.sub);save();render();}
-    else if(a==='add-sub'){const text=prompt('what tiny step?');if(text&&text.trim()){if(!task.subtasks)task.subtasks=[];task.subtasks.push({id:'s'+Date.now(),text:text.trim(),done:false});save();render();}}
+    else if(a==='add-sub'){openAddSubModal(task);}
     else if(a==='edit')openModal(task);
     else if(a==='delete'){if(confirm('delete this task?')){state.tasks=state.tasks.filter(t=>t.id!==id);save();render();toast('gone');}}
     else if(a==='breakdown')openBreakdown(task);
@@ -1057,9 +1492,16 @@ document.addEventListener('click',(e)=>{
   if(e.target.id==='roulette-btn')rouletteTask();
   if(e.target.id==='twomin-btn')startTimer(null,2);
   if(e.target.id==='bodydouble-btn')startTimer({title:'whatever you want'},25,true);
+  if(e.target.id==='template-btn')openTemplatePicker();
   if(e.target.id==='freeze-btn')freezeStreak();
   if(e.target.id==='notif-btn')requestNotifPermission();
-  if(e.target.id==='notif-btn')requestNotifPermission();
+  if(e.target.id==='mute-btn'){
+    meta.muted=!meta.muted;saveMeta();
+    document.getElementById('mute-btn').textContent=meta.muted?'🔇 Sound off':'🔊 Sound';
+    if(!meta.muted)sfx('coin');
+    toast(meta.muted?'sound off':'sound on');
+  }
+  if(e.target.id==='ical-btn')exportICS();
   if(e.target.id==='export-btn')exportJSON();
   if(e.target.id==='import-btn')document.getElementById('import-file').click();
   if(e.target.id==='copy-btn')copyAsText();

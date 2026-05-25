@@ -36,7 +36,10 @@ Your blob's world. Six regions unlock as you complete tasks. Click any unlocked 
 Three sections: blobs you've unlocked, blob fusion lab (combine two for hybrids), accessories you can buy with coins.
 
 ### 📊 Stats
-The last 7 days as a chart, your most productive weekday, total stats, and your mood log if you've been doing daily check-ins.
+The last 7 days as a chart, your most productive weekday, total stats, and your mood log if you've been doing daily check-ins. Also includes:
+
+- **📈 Habit tracker** — Any recurring task gets a 28-day GitHub-style grid. Green = days you completed it. Streaks shown for daily habits, today's cell outlined.
+- **📔 Weekly journal** — On Sundays, a special review asks "what went well" and "what's bugging you". Your last 4 weeks of reflections show here. Worth 10 coins per entry.
 
 ### ✅ Done
 Everything you've completed. Helpful when you want to feel productive.
@@ -57,9 +60,9 @@ Click **✨ smaller** on any task. Two options:
 Each step should take 2–15 minutes. Embarrassingly small steps are correct.
 
 ### Focus modes
-- **⏱ Focus 25** — Pomodoro timer for that task. Earns 5 coins on completion.
-- **⚡ 2-min sprint** — Same but for 2 minutes. Use it to break inertia. Earns 2 coins.
-- **👥 Body double** — 25-min session where the blob "works alongside you" with rotating idle messages. Helps with task initiation. Earns 3 coins.
+- **⏱ Focus 25** — 25-minute Pomodoro timer for that task. During the session, Goober works alongside you with rotating activities ("typing furiously", "sipping coffee", "thinking hard"). You and Goober each have your own progress bar that fills in parallel. At ~20%, ~50%, and ~80% through the session, a small check-in pops up: "still going" / "need help?" Tapping "need help?" stops the timer and opens the breakdown helper. Earns 5 coins.
+- **⚡ 2-min sprint** — Shorter version for breaking inertia. No mid-session check-ins. Earns 2 coins.
+- **👥 Body double** — 25-min session focused on the pretend-coworking feel. Goober shows rotating idle messages every 8 seconds. Earns 3 coins.
 
 ### When you don't know where to start
 Hit **🎲 Pick one for me**. It picks a task (weighted toward urgent ones) and jumps you to the Now view.
@@ -100,7 +103,7 @@ Every 10th task you complete spawns a chest in a random unlocked region. You'll 
 - 15% chance: free shop item
 
 ### NPC visitors
-About 40% of days, a random NPC blob appears as a card on your Tasks tab with a small mini-quest:
+About 70% of days, a random NPC blob appears as a card on your Tasks tab with a small mini-quest:
 - **The wanderer** wants you to finish 3 tasks today
 - **The merchant** wants 5 tasks
 - **The sage** wants one deep focus task
